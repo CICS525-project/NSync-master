@@ -12,16 +12,16 @@ import com.microsoft.azure.storage.queue.CloudQueue;
 
 public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         NsyncServerInterface {
-
+    
     private int serverId = 1;
-
+    
     private static final long serialVersionUID = 1L;
-
+    
     protected NsyncServerInterfaceImpl() throws RemoteException {
         super();
         // TODO Auto-generated constructor stub
     }
-
+    
     @Override
     public boolean getPermission(String username) throws RemoteException {
         ArrayList<Integer> oids = Connection.getOServerIds(serverId);
@@ -38,34 +38,48 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         }
         return true;
     }
-
+    
     private static long getQueueSize(String queuename, int serverId)
             throws RemoteException {
         Connection.serverId = serverId;
         long size = QueueManager.getQueueLength(queuename);
         return size;
     }
-
+    
     @Override
     public boolean isUp() throws RemoteException {
         // TODO Auto-generated method stub
         return false;
     }
-
+    
     @Override
-    public SendObject processSendObject(SendObject s) throws RemoteException {
+    public SendObject serverDBUpdate(SendObject s) throws RemoteException {
 
-		// call the db update method to insert into the db
+        // call the db update method to insert into the db
         // if insert is successfully done
-        s.setEnteredIntoDB(true);
+        // check the value of the event
+        if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Create)) {
+            //client should do the update
+        }
+        
+        if (s.getEvent().equals(SendObject.EventType.Delete)) {
+            //call blobmanager to delete the file from the blob
+            BlobManager.deleteBlob(s.getFilePath() + "/" + s.getFileName());
+        }
+        
+         if (s.getEvent().equals(SendObject.EventType.Delete)) {
+            //call blobmanager to delete the file from the blob
+            BlobManager.renameBlob(s.getFilePath() + "/" + s.getNewFileName(), s.getFilePath() + "/" + s.getFileName());
+        }
+        //return the sendObject to the client;
         return s;
     }
-
+    
     private boolean updateDB() {
         // Jasmine's method to update the online db
         return false;
     }
-
+    
     @Override
     public boolean createAccount(String username, String password, String email)
             throws RemoteException {
@@ -76,7 +90,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
             return false;
         }
     }
-
+    
     @Override
     public boolean loginUser(String username, String password)
             throws RemoteException {
@@ -85,7 +99,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         }
         return false;
     }
-
+    
     @Override
     public String createQueue(String username) throws RemoteException {
         // TODO Auto-generated method stub
@@ -93,7 +107,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         QueueManager.createQueue(queuename);
         return queuename;
     }
-
+    
     @Override
     public boolean verifyUser(String username, String password)
             throws RemoteException {
@@ -103,10 +117,25 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         }
         return false;
     }
-
+    
     @Override
     public String getGeneratedPassword(String password) throws RemoteException {
         return UserManager.getGeneratedPassword(password);
     }
-
+    
+    @Override
+    public boolean serverToClientSync(Date lastTS, String qName) throws RemoteException {
+        try {
+            //assuming I get back an arraylist of sendobjects
+            ArrayList<SendObject> toSync = new ArrayList<SendObject>(); //this should be Yasmin's method 
+            for (SendObject s : toSync) {
+                String message = QueueManager.convertSendObjectToString(s);
+                QueueManager.enqueue(message, qName);
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
 }

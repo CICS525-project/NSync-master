@@ -2,12 +2,15 @@ package Communication;
 import java.rmi.*;
 
 import Controller.SendObject;
+import java.util.Date;
 
 public interface NsyncServerInterface extends Remote {      
 	 
     public boolean getPermission(String queueName) throws RemoteException;
     
-    public SendObject processSendObject(SendObject s) throws RemoteException;
+    public SendObject serverDBUpdate(SendObject s) throws RemoteException;
+    
+    public boolean serverToClientSync(Date lastTS, String qName) throws RemoteException;
     
     public boolean isUp() throws RemoteException;
     
