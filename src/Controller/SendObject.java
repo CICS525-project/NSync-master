@@ -1,13 +1,17 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
 package Controller;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.security.MessageDigest;
 import java.util.Date;
 
-public class SendObject implements Serializable {
-
+public class SendObject {
     private String fileName;
     private String newFileName;  //used just in case of a Rename event
     private String filePath;    //relative filePath
@@ -18,20 +22,18 @@ public class SendObject implements Serializable {
     private String hash;
     private String ID;      //this is the file ID
     private String userID;
-
-    private static final long serialVersionUID = 1L;
-
+  
     public enum EventType {
-
         Create, Delete, Rename, Modify
     }
 
+    
     public SendObject() {
         enteredIntoDB = false;
         //this.setUserID(UserProperties.userID);
     }
-
-    public SendObject(String fileName, String filePath, EventType event, Date timeStamp,
+    
+    public SendObject(String fileName,String filePath,EventType event, Date timeStamp, 
             boolean isAFolder, String newFileName, String hash) {
         this.fileName = fileName;
         this.newFileName = newFileName;
@@ -43,7 +45,7 @@ public class SendObject implements Serializable {
         this.setHash(hash);
         //this.setUserID(UserProperties.userID);
     }
-
+    
     /**
      * @return the newFileName
      */
@@ -71,7 +73,7 @@ public class SendObject implements Serializable {
     public void setIsAFolder(boolean isAFolder) {
         this.isAFolder = isAFolder;
     }
-
+    
     /**
      * @return the fileName
      */
@@ -141,7 +143,7 @@ public class SendObject implements Serializable {
     public void setTimeStamp(Date timeStamp) {
         this.timeStamp = timeStamp;
     }
-
+    
     /**
      * @return the ID
      */
@@ -155,8 +157,8 @@ public class SendObject implements Serializable {
     public void setID(String ID) {
         this.ID = ID;
     }
-
-    /**
+    
+     /**
      * @return the hash
      */
     public String getHash() {
@@ -168,56 +170,57 @@ public class SendObject implements Serializable {
      */
     public void setHash(String hash) {
         this.hash = hash;
-        /*try {
-         if(event == EventType.Rename){
-         this.hash = getChecksum(NSyncClient.dir.toString() + "\\" + this.filePath + "\\" + this.newFileName, "MD5");
-         } else {
-         this.hash = getChecksum(NSyncClient.dir.toString() + "\\" + this.filePath + "\\" + this.fileName, "MD5");
-         }
-         } catch (Exception e){
-         System.out.println("Exception during creating hash of the file (" + this.fileName + ")" + e.getMessage());
-         } */
-    }
-
-    /*
-     Creating the hash for the file
-     */
-    public static String getChecksum(String filename, String algo) throws Exception {
-        byte[] b = createChecksum(filename, algo);
-        String result = "";
-        for (int i = 0; i < b.length; i++) {
-            result
-                    += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
-        }
-        return result;
-    }
-
-    public static byte[] createChecksum(String filename, String algo) throws Exception {
-        InputStream fis = new FileInputStream(filename);
-        byte[] buffer = new byte[1024];
-        MessageDigest complete = MessageDigest.getInstance(algo); //One of the following "SHA-1", "SHA-256", "SHA-384", and "SHA-512"  
-        int numRead;
-        do {
-            numRead = fis.read(buffer);
-            if (numRead > 0) {
-                complete.update(buffer, 0, numRead);
+    	/*try {
+            if(event == EventType.Rename){
+                this.hash = getChecksum(NSyncClient.dir.toString() + "\\" + this.filePath + "\\" + this.newFileName, "MD5");
+            } else {
+                this.hash = getChecksum(NSyncClient.dir.toString() + "\\" + this.filePath + "\\" + this.fileName, "MD5");
             }
-        } while (numRead != -1);
-        fis.close();
-        return complete.digest();
+        } catch (Exception e){
+            System.out.println("Exception during creating hash of the file (" + this.fileName + ")" + e.getMessage());
+        } */
     }
+    
+    /*
+    Creating the hash for the file
+    */
+    public static String getChecksum(String filename, String algo) throws Exception {  
+      byte[] b = createChecksum(filename, algo);  
+      String result = "";  
+      for (int i=0; i < b.length; i++) {  
+           result +=  
+                     Integer.toString( ( b[i] & 0xff ) + 0x100, 16).substring( 1 );  
+      }  
+      return result;  
+    }  
+    
+    public static byte[] createChecksum(String filename, String algo) throws Exception{  
+      InputStream fis = new FileInputStream(filename);  
+      byte[] buffer = new byte[1024];  
+      MessageDigest complete = MessageDigest.getInstance(algo); //One of the following "SHA-1", "SHA-256", "SHA-384", and "SHA-512"  
+      int numRead;  
+      do {  
+           numRead = fis.read(buffer);  
+           if (numRead > 0) {  
+                complete.update(buffer, 0, numRead);  
+           }  
+      } while (numRead != -1);  
+      fis.close();  
+      return complete.digest();  
+ }
 
-    /**
-     * @return the userID
-     */
-    public String getUserID() {
-        return userID;
-    }
+	/**
+	 * @return the userID
+	 */
+	public String getUserID() {
+		return userID;
+	}
 
-    /**
-     * @param userID the userID to set
-     */
-    public void setUserID(String userID) {
-        this.userID = userID;
-    }
+	/**
+	 * @param userID the userID to set
+	 */
+	public void setUserID(String userID) {
+		this.userID = userID;
+	}  
+    
 }

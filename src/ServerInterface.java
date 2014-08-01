@@ -9,4 +9,6 @@ public interface ServerInterface extends Remote {
     
     public String echoIP(ClientInterface client) throws RemoteException;
     
+    //public String copyBlob() throws RemoteException;
+    
 }

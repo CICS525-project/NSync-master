@@ -1,9 +1,9 @@
 package Communication;
 
-import Controller.SendObject;
 import java.util.ArrayList;
 import java.util.Date;
 
+import Controller.SendObject;
 import Controller.SendObject.EventType;
 import com.microsoft.azure.storage.*;
 import com.microsoft.azure.storage.queue.*;

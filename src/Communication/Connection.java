@@ -59,7 +59,7 @@ public class Connection {
 	public static Map<String, String> getServerConnectionParams(int serverId) {
 		Map<String, String> connParams = new HashMap<String, String>();
 		if (serverId == 1) {
-			String storageConnectionString = "DefaultEndpointsProtocol=https;"
+			String storageConnectionString = "DefaultEndpointsProtocol=http;"
 					+ "AccountName=portalvhdsh8ghz0s9b7mx9;"
 					+ "AccountKey=ThVIUXcwpsYqcx08mtIhRf6+XxvEuimK35/M65X+XlkdVCQNl4ViUiB/+tz/nq+eeZAEZCNrmFVQwwN3QiykvA==";
 			String dbConnectionString = "jdbc:sqlserver://ah0sncq8yf.database.windows.net:1433"

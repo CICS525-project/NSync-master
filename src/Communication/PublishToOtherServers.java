@@ -1,8 +1,9 @@
 package Communication;
 
-import Controller.SendObject;
 import java.util.ArrayList;
 
+import Controller.SendObject;
+import Controller.ServerProperties;
 
 public class PublishToOtherServers {
 

@@ -1,10 +1,11 @@
 package Communication;
 
-import Controller.SendObject;
 import java.util.ArrayList;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
+import Controller.SendObject;
+import Controller.ServerProperties;
 
 public class Receiver {
 	public static void receiveFromQueue() {
