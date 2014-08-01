@@ -8,10 +8,11 @@ package Controller;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.util.Date;
 
-public class SendObject {
+public class SendObject implements Serializable{
     private String fileName;
     private String newFileName;  //used just in case of a Rename event
     private String filePath;    //relative filePath
@@ -22,6 +23,8 @@ public class SendObject {
     private String hash;
     private String ID;      //this is the file ID
     private String userID;
+    
+     private static final long serialVersionUID = 1L;
   
     public enum EventType {
         Create, Delete, Rename, Modify
@@ -179,6 +182,10 @@ public class SendObject {
         } catch (Exception e){
             System.out.println("Exception during creating hash of the file (" + this.fileName + ")" + e.getMessage());
         } */
+    }
+    
+    public void setHash() {
+        
     }
     
     /*
