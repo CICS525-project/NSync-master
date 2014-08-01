@@ -79,22 +79,24 @@ public class UserManager {
             con.commit();
             //stmt.close();
             // Provide a message when processing is complete.
-            System.out.println("User " + username + "  " + password +" successfully created");
+            System.out.println("User " + username + "  " + password + " successfully created");
+            try {
+                con.close();// = DBProperties.establishConnection();
+            } catch (SQLException ex) {
+                Logger.getLogger(UserManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return true;
         } catch (Exception e) {
             try {
                 con.rollback();
+                con.close();
             } catch (SQLException ex) {
                 Logger.getLogger(UserManager.class.getName()).log(Level.SEVERE, null, ex);
             }
             e.printStackTrace();
             return false;
         }
-        try {
-            con.close();// = DBProperties.establishConnection();
-        } catch (SQLException ex) {
-            Logger.getLogger(UserManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return true;
+
     }
 
     public synchronized static String createQueueForUser(String username) {
@@ -111,5 +113,7 @@ public class UserManager {
                 + salt);
         return password;
     }
+    
+   
 
 }
