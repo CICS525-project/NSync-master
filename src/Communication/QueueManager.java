@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import Controller.SendObject;
+import Controller.ServerProperties;
 
 import com.microsoft.azure.storage.*;
 import com.microsoft.azure.storage.queue.*;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class QueueManager {
 
@@ -99,9 +102,9 @@ public class QueueManager {
             retrievedMessage = queue.retrieveMessage(200,
                     null, null);
 
-			// retrievedMessage.
+            // retrievedMessage.
             if (retrievedMessage != null) {
-				// Process the message in less than 30 seconds, and then delete
+                // Process the message in less than 30 seconds, and then delete
                 // the message.
                 queue.deleteMessage(retrievedMessage);
             }
@@ -187,8 +190,40 @@ public class QueueManager {
         return cachedMessageCount;
     }
 
+    public static void clearOldQueues() {
+        Thread t = new Thread(new Runnable() {
+
+            private long timeDifferenceInHours(Date laterDate, Date earlierDate) {
+                long result = ((laterDate.getTime() / (60000 * 60)) - (earlierDate.getTime() / (60000 * 60)));
+                return result;
+            }
+
+            @Override
+            public void run() {
+                while (true) {
+                    for (CloudQueue cq : getListOfQueues("")) {
+                        String queueName = cq.getName();
+                        long timeCreated = Long.valueOf(queueName.replaceAll("\\D+", ""));
+
+                        if (timeDifferenceInHours(new Date(), new Date(timeCreated)) > 2 && !ServerProperties.userQueues.containsKey(queueName)) {
+                            System.out.println("Deleting " + queueName);
+                            deleteQueue(queueName);
+                        }
+                    }
+
+                    try {
+                        Thread.sleep(86400);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(QueueManager.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+        t.start();
+    }
+
     public static void main(String[] args) {
-		// System.out.println(User.getUsername());
+        // System.out.println(User.getUsername());
         //getListOfQueues("democontainer");
         //enqueue("Yanki don kolo", "democontainer1406268314962");
         //getQueueLength("democontainer1406268314962");

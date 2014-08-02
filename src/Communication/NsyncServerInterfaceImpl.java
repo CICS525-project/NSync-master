@@ -1,6 +1,7 @@
 package Communication;
 
 import Controller.SendObject;
+import Controller.ServerProperties;
 import ServerDBManager.UserManager;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -17,9 +18,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
 
     private int serverId = 1;
 
-    private static final long serialVersionUID = 1L;
-
-    private static Map<String, Date> userQueues = new HashMap<String, Date>();
+    private static final long serialVersionUID = 1L;    
 
     protected NsyncServerInterfaceImpl() throws RemoteException {
         super();
@@ -46,8 +45,8 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
     }
 
     public boolean getPermissionForServers(String username) {
-        if (userQueues.size() > 0) {
-            Iterator it = userQueues.entrySet().iterator();
+        if (ServerProperties.userQueues.size() > 0) {
+            Iterator it = ServerProperties.userQueues.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pairs = (Map.Entry) it.next();
                 System.out.println(pairs.getKey() + " = " + pairs.getValue());
@@ -63,8 +62,8 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
     }
 
     private boolean getPermissionOnSelf(String username, String queueName) {
-        if (userQueues.size() > 0) {
-            Iterator it = userQueues.entrySet().iterator();
+        if (ServerProperties.userQueues.size() > 0) {
+            Iterator it = ServerProperties.userQueues.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pairs = (Map.Entry) it.next();
                 System.out.println(pairs.getKey() + " = " + pairs.getValue());
@@ -145,14 +144,14 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         if (oldQueueName.equals("")) {
             String queuename = username + new Date().getTime();
             QueueManager.createQueue(queuename);
-            userQueues.put(queuename, new Date());
+            ServerProperties.userQueues.put(queuename, new Date());
             return queuename;
         } else {
-            if (userQueues.containsKey(oldQueueName) && QueueManager.queueExists(oldQueueName)) {
+            if (ServerProperties.userQueues.containsKey(oldQueueName) && QueueManager.queueExists(oldQueueName)) {
                 return oldQueueName;
             } else {
                 String queuename = username + new Date().getTime();
-                userQueues.put(queuename, new Date());
+                ServerProperties.userQueues.put(queuename, new Date());
                 QueueManager.createQueue(queuename);
                 return queuename + "-";
             }
@@ -192,11 +191,11 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
     @Override
     public boolean maintainQueue(String queuename) throws RemoteException {
         //get the queuename from the list
-        if (userQueues.containsKey(queuename)) {
-            userQueues.put(queuename, new Date());
+        if (ServerProperties.userQueues.containsKey(queuename)) {
+            ServerProperties.userQueues.put(queuename, new Date());
             return true;
         } else {
-            userQueues.put(queuename, new Date());
+            ServerProperties.userQueues.put(queuename, new Date());
             return false;
         }
     }
@@ -211,13 +210,13 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
                     } catch (InterruptedException ex) {
                         Logger.getLogger(NsyncServerInterfaceImpl.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    if (userQueues.size() > 0) {
-                        Iterator it = userQueues.entrySet().iterator();
+                    if (ServerProperties.userQueues.size() > 0) {
+                        Iterator it = ServerProperties.userQueues.entrySet().iterator();
                         while (it.hasNext()) {
                             Map.Entry pairs = (Map.Entry) it.next();
                             System.out.println(pairs.getKey() + " = " + pairs.getValue());
                             if (timeDifferenceInMinutes(new Date(), new Date(pairs.getValue().toString())) >= 3) {
-                                userQueues.remove(pairs.getKey().toString());
+                                ServerProperties.userQueues.remove(pairs.getKey().toString());
                                 QueueManager.deleteQueue(pairs.getKey().toString());
                             }
                             it.remove(); // avoids a ConcurrentModificationException
