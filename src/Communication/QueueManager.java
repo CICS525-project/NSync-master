@@ -32,6 +32,34 @@ public class QueueManager {
 			e.printStackTrace();
 		}
 	}
+        
+        public boolean queueExists(String queueName) {
+            try {
+			// Retrieve storage account from connection-string.
+			CloudStorageAccount storageAccount = CloudStorageAccount
+					.parse(storageConnectionString);
+
+			// Create the queue client.
+			CloudQueueClient queueClient = storageAccount
+					.createCloudQueueClient();
+
+			// Retrieve a reference to a queue.
+			CloudQueue queue = queueClient.getQueueReference(queueName);
+
+			// Create the queue if it doesn't already exist.
+			queue.createIfNotExists();
+                        
+                        if(queue.exists()) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+		} catch (Exception e) {
+			// Output the stack trace.
+			e.printStackTrace();
+                        return false;
+		}
+        }
 
 	public static void enqueue(String mes, String queueName) {
 		try {
