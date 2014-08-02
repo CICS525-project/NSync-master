@@ -6,7 +6,9 @@ import java.util.Date;
 
 public interface NsyncServerInterface extends Remote {      
 	 
-    public boolean getPermission(String queueName) throws RemoteException;
+    public boolean getPermission(String queuename) throws RemoteException;
+    
+    public boolean getPermissionForServers(String username) throws RemoteException;
     
     public SendObject serverDBUpdate(SendObject s) throws RemoteException;
     
@@ -18,7 +20,9 @@ public interface NsyncServerInterface extends Remote {
     
     public boolean loginUser(String username, String password) throws RemoteException;
     
-    public String createQueue(String username) throws RemoteException;  
+    public String createQueue(String username, String oldQueueName) throws RemoteException;  
+    
+    public boolean maintainQueue(String queuename) throws RemoteException;
     
     public boolean verifyUser(String username, String password) throws RemoteException;
     

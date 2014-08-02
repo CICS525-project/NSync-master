@@ -11,6 +11,8 @@ public class RegisterWithRMIServer {
     static Registry registry;
 
     public static void main(String[] args) {
+        
+        /* Accept connections from clients and servers */
         try {
             System.setProperty("java.rmi.server.hostname", "138.91.113.97");
             System.setProperty("javax.net.ssl.keyStore", "C:\\ssl\\serverkeystore.jks");
