@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import Controller.SendObject;
-import Controller.SendObject.EventType;
+
 import com.microsoft.azure.storage.*;
 import com.microsoft.azure.storage.queue.*;
 import java.net.URISyntaxException;
@@ -13,7 +13,7 @@ import java.security.InvalidKeyException;
 public class QueueManager {
 
     public static final String storageConnectionString = Connection
-            .getStorageConnectionString();
+            .getStorageConnectionString(ServerProperties.serverId);
 
     public static void createQueue(String queueName) {
         try {

@@ -31,7 +31,7 @@ public class BlobManager {
         containerName = containerName.toLowerCase();
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
-                    .parse(Connection.getStorageConnectionString());
+                    .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
             CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
             CloudBlobContainer container = blobClient
                     .getContainerReference(containerName);
@@ -50,7 +50,7 @@ public class BlobManager {
         System.out.println("Blob is " + blobName);
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
-                    .parse(Connection.getStorageConnectionString());
+                    .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
             CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
             CloudBlobContainer container = blobClient
                     .getContainerReference(containerName);
@@ -73,7 +73,7 @@ public class BlobManager {
     public synchronized static void deleteBlobContainer() {
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
-                    .parse(Connection.getStorageConnectionString());
+                    .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
 
             CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
             CloudBlobContainer container = blobClient
@@ -99,7 +99,7 @@ public class BlobManager {
     private static void renameSingleBlob(String oldName, String newName) {
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
-                    .parse(Connection.getStorageConnectionString());
+                    .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
             CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
             CloudBlobContainer container = blobClient
                     .getContainerReference(containerName);
@@ -119,7 +119,7 @@ public class BlobManager {
         System.out.println("The new name is " + newName);
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
-                    .parse(Connection.getStorageConnectionString());
+                    .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
 
             CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
             CloudBlobContainer container = blobClient

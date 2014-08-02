@@ -145,12 +145,14 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         if (oldQueueName.equals("")) {
             String queuename = username + new Date().getTime();
             QueueManager.createQueue(queuename);
+            userQueues.put(queuename, new Date());
             return queuename;
         } else {
             if (userQueues.containsKey(oldQueueName) && QueueManager.queueExists(oldQueueName)) {
                 return oldQueueName;
             } else {
                 String queuename = username + new Date().getTime();
+                userQueues.put(queuename, new Date());
                 QueueManager.createQueue(queuename);
                 return queuename + "-";
             }

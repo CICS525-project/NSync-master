@@ -113,17 +113,17 @@ public class Connection {
         return connParams;
     }
 
-    public static String getStorageConnectionString() {
+    public static String getStorageConnectionString(int serverId) {
         Map<String, String> connParams = getServerConnectionParams(serverId);
         return connParams.get("storageConnectionString");
     }
 
-    public static String getDBConnectionString() {
+    public static String getDBConnectionString(int serverId) {
         Map<String, String> connParams = getServerConnectionParams(serverId);
         return connParams.get("dbConnectionString");
     }
 
-    public static String getURL() {
+    public static String getURL(int serverId) {
         Map<String, String> connParams = getServerConnectionParams(serverId);
         System.out.println("the url is " + connParams.get("url"));
         return connParams.get("url");
