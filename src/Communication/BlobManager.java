@@ -1,5 +1,6 @@
 package Communication;
 
+import Controller.ServerProperties;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.BlobListingDetails;
