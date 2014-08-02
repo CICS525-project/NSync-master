@@ -1,5 +1,6 @@
 package ServerDBManager;
 
+import Controller.ServerProperties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -8,12 +9,7 @@ public class DBProperties {
 
 	public static Connection establishConnection() {
 		// Connection string for your SQL Database server 1.
-		String connectionString = "jdbc:sqlserver://jvaakzlcvo.database.windows.net:1433"
-				+ ";"
-				+ "database=db_like"
-				+ ";"
-				+ "user=yanki@jvaakzlcvo"
-				+ ";" + "password=almeta%6y";
+		String connectionString = Communication.Connection.getDBConnectionString(ServerProperties.serverId);
 		Connection connection = null; // For making the connections
 		try {
 			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
