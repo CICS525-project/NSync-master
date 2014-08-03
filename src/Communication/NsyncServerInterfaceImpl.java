@@ -124,6 +124,9 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
             throws RemoteException {
         if (UserManager.createUser(username, password, email)) {
             BlobManager.createContainter(username);
+            
+            //broadcast to other servers
+            PublishToOtherServers.publisher(username, password, email);
             return true;
         } else {
             return false;

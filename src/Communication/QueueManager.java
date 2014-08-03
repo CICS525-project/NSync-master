@@ -53,13 +53,38 @@ public class QueueManager {
             CloudQueue queue = queueClient.getQueueReference(queueName);
             return true;
         } catch (URISyntaxException | InvalidKeyException | StorageException e) {
-            // Output the stack trace.
+            // Output the stack trace. Means the queue does not exist
             e.printStackTrace();
             return false;
         }
     }
 
     public static void enqueue(String mes, String queueName) {
+        try {
+            // Retrieve storage account from connection-string.
+            CloudStorageAccount storageAccount = CloudStorageAccount
+                    .parse(storageConnectionString);
+
+            // Create the queue client.
+            CloudQueueClient queueClient = storageAccount
+                    .createCloudQueueClient();
+
+            // Retrieve a reference to a queue.
+            CloudQueue queue = queueClient.getQueueReference(queueName);
+
+            // Create the queue if it doesn't already exist.
+            queue.createIfNotExists();
+
+            // Create a message and add it to the queue.
+            CloudQueueMessage message = new CloudQueueMessage(mes);
+            queue.addMessage(message);
+        } catch (Exception e) {
+            // Output the stack trace.
+            e.printStackTrace();
+        }
+    }
+
+    public static void enqueue(String mes, String queueName, String storageConnectionString) {
         try {
             // Retrieve storage account from connection-string.
             CloudStorageAccount storageAccount = CloudStorageAccount
@@ -206,8 +231,10 @@ public class QueueManager {
                         long timeCreated = Long.valueOf(queueName.replaceAll("\\D+", ""));
 
                         if (timeDifferenceInHours(new Date(), new Date(timeCreated)) > 2 && !ServerProperties.userQueues.containsKey(queueName)) {
-                            System.out.println("Deleting " + queueName);
-                            deleteQueue(queueName);
+                            if (!queueName.equals("FileEvents") && !queueName.equals("UserEvents")) {
+                                System.out.println("Deleting " + queueName);
+                                deleteQueue(queueName);
+                            }
                         }
                     }
 

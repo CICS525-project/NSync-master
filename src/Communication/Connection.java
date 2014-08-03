@@ -1,7 +1,6 @@
 package Communication;
 
-import Communication.NsyncServerInterface;
-
+import Controller.ServerProperties;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -19,15 +18,9 @@ public class Connection {
 
     public static int serverPort = 9005;
 
-    public static int serverId = getRandomServer();
+    public static int serverId = ServerProperties.serverId;
 
-    public static NsyncServerInterface server;
-
-    private static int getRandomServer() {
-        Random rand = new Random();
-        int n = rand.nextInt(3) + 1;
-        return n;
-    }
+    public static NsyncServerInterface server;    
 
     public static ArrayList<Integer> getOtherServerIds(int sId) {
         ArrayList<Integer> serverIds = new ArrayList<Integer>();
@@ -127,66 +120,7 @@ public class Connection {
         Map<String, String> connParams = getServerConnectionParams(serverId);
         System.out.println("the url is " + connParams.get("url"));
         return connParams.get("url");
-    }
-
-    public static boolean isServerUp() {
-        Map<String, String> connParams = getServerConnectionParams(serverId);
-        System.out.println(connParams.get("serverIP"));
-        System.setProperty("javax.net.ssl.keyStore",
-                System.getProperty("user.dir")
-                + "\\src\\Settings\\clientkeystore.jks");
-        System.setProperty("javax.net.ssl.keyStorePassword", "justdoit525");
-        System.setProperty("javax.net.ssl.trustStore",
-                System.getProperty("user.dir")
-                + "\\src\\Settings\\clienttruststore.jks");
-        System.setProperty("javax.net.ssl.trustStorePassword", "justdoit525");
-        System.setProperty("javax.net.ssl.debug", "all");
-
-        try {
-            System.setProperty("java.rmi.server.hostname",
-                    connParams.get("serverIP"));
-            Registry registry = LocateRegistry.getRegistry(
-                    connParams.get("serverIP"), serverPort,
-                    new SslRMIClientSocketFactory());
-            server = (NsyncServerInterface) registry
-                    .lookup("ServerInterfaceImpl");
-            server.isUp();
-            return true;
-        } catch (NotBoundException | RemoteException e) {
-            e.printStackTrace();
-            serverId = getOtherServerIds().get(0);
-            connParams = getServerConnectionParams(serverId);
-            try {
-                System.setProperty("java.rmi.server.hostname",
-                        connParams.get("serverIP"));
-                Registry registry = LocateRegistry.getRegistry(
-                        connParams.get("serverIP"), serverPort,
-                        new SslRMIClientSocketFactory());
-                server = (NsyncServerInterface) registry
-                        .lookup("ServerInterfaceImpl");
-                server.isUp();
-                return true;
-            } catch (NotBoundException | RemoteException e2) {
-                e2.printStackTrace();
-                serverId = getOtherServerIds().get(1);
-                connParams = getServerConnectionParams(serverId);
-                try {
-                    System.setProperty("java.rmi.server.hostname",
-                            connParams.get("serverIP"));
-                    Registry registry = LocateRegistry.getRegistry(
-                            connParams.get("serverIP"), serverPort,
-                            new SslRMIClientSocketFactory());
-                    server = (NsyncServerInterface) registry
-                            .lookup("ServerInterfaceImpl");
-                    server.isUp();
-                    return true;
-                } catch (NotBoundException | RemoteException e3) {
-                    e3.printStackTrace();
-                    return false;
-                }
-            }
-        }
-    }
+    }    
 
     public static NsyncServerInterface isServerUp(int sId, int serverPort) {
         NsyncServerInterface server = null;
