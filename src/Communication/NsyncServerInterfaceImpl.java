@@ -104,12 +104,12 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
 
         if (s.getEvent().equals(SendObject.EventType.Delete)) {
             //call blobmanager to delete the file from the blob
-            BlobManager.deleteBlob(s.getFilePath() + "/" + s.getFileName());
+            BlobManager.deleteBlob(s.getUserID() + "/" + s.getFilePath() + "/" + s.getFileName());
         }
 
         if (s.getEvent().equals(SendObject.EventType.Delete)) {
             //call blobmanager to delete the file from the blob
-            BlobManager.renameBlob(s.getFilePath() + "/" + s.getNewFileName(), s.getFilePath() + "/" + s.getFileName());
+            BlobManager.renameBlob(s.getUserID() + "/" + s.getFilePath() + "/" + s.getNewFileName(), s.getFilePath() + "/" + s.getFileName());
         }
         //return the sendObject to the client;
         return s;

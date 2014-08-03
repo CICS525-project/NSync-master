@@ -37,8 +37,12 @@ public class Receiver {
         // continually check to see if the queue has something in a thread
         ServerProperties.subscriber.start();
     }
+    
+    private static void actOnMessage(SendObject s) {
+        
+    }
 
-    public static void processMessageFromQueue(SendObject s) {
+    private static void processMessageFromQueue(SendObject s) {
         String prefix = s.getUserID();
         ArrayList<CloudQueue> qs = QueueManager.getListOfQueues(prefix);
         for (CloudQueue cq : qs) {

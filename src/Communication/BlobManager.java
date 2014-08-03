@@ -3,12 +3,15 @@ package Communication;
 import Controller.ServerProperties;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.BlobContainerPermissions;
+import com.microsoft.azure.storage.blob.BlobContainerPublicAccessType;
 import com.microsoft.azure.storage.blob.BlobListingDetails;
 import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.EnumSet;
@@ -22,7 +25,7 @@ public class BlobManager {
     private static String url = "https://portalvhdsh8ghz0s9b7mx9.blob.core.windows.net/"
             + containerName + "/";
 
-	// remember to set container name back to user if you have to change it for
+    // remember to set container name back to user if you have to change it for
     // any reason
     public static void setContainerName(String newContainerName) {
         containerName = newContainerName;
@@ -145,5 +148,120 @@ public class BlobManager {
             System.out.println("The message of the exception is "
                     + ex.getMessage());
         }
+    }
+
+    public static void copyBlob(String srcContainerName, String destContainerName, String blobName, int sourceServer, int destServer) {
+
+        CloudStorageAccount storageAccountSource = null;
+        CloudStorageAccount storageAccountDest = null;
+        try {
+            storageAccountSource = CloudStorageAccount.parse(Connection.getStorageConnectionString(sourceServer));
+            storageAccountDest = CloudStorageAccount.parse(Connection.getStorageConnectionString(destServer));
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        CloudBlobClient cloudBlobClients = null;
+        CloudBlobClient cloudBlobClientd = null;
+        cloudBlobClients = storageAccountSource.createCloudBlobClient();
+        cloudBlobClientd = storageAccountDest.createCloudBlobClient();
+
+        CloudBlobContainer srcContainer = null;
+        CloudBlobContainer destContainer = null;
+
+        try {
+            destContainer = cloudBlobClientd
+                    .getContainerReference(destContainerName);
+            srcContainer = cloudBlobClients
+                    .getContainerReference(srcContainerName);
+
+            openContainer(destContainer);
+            openContainer(srcContainer);
+
+        } catch (URISyntaxException | StorageException e1) {
+            e1.printStackTrace();
+        }
+
+        CloudBlob destBlob = null;
+        CloudBlob sourceBlob = null;
+        // get the SAS token to use for all blobs
+        try {
+            sourceBlob = srcContainer.getBlockBlobReference(blobName);
+            destBlob = destContainer.getBlockBlobReference(blobName);
+
+            System.out.println(destBlob + " " + destBlob.getName());
+            if (!destBlob.exists()) {
+                //copy would fail so I have to create the blob first and add some random data in it
+                System.out.println("Blob does not exist ... creating the blob");
+                String path = System.getProperty("user.dir") + "/helpme.txt";
+                File f = new File(path);
+                if (!f.exists()) {
+                    try {
+                        f.createNewFile();
+                        destBlob.uploadFromFile(path);
+                    } catch (IOException ex) {
+                        Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+            while (true) {
+                try {
+                    sourceBlob.acquireLease(60, "ddddddddddddddddddddddddddddddde");
+                    break;
+                } catch (Exception e) {
+                    System.out.println("Trying to acquire lease on blob " + blobName);
+                    e.printStackTrace();
+                }
+            }
+            //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
+            destBlob.startCopyFromBlob(sourceBlob);
+            
+
+            System.out.println(destBlob.getCopyState().getStatusDescription());
+
+            closeContainer(srcContainer);
+            closeContainer(destContainer);
+
+        } catch (StorageException | URISyntaxException e) {
+            //e.printStackTrace();
+            System.out.println(e.getLocalizedMessage());
+        }
+
+    }
+
+    private static void closeContainer(CloudBlobContainer e) {
+        BlobContainerPermissions containerPermissions = new BlobContainerPermissions();
+        // Include public access in the permissions object.
+        containerPermissions.setPublicAccess(BlobContainerPublicAccessType.OFF);
+        // Set the permissions on the container.
+        try {
+            e.uploadPermissions(containerPermissions);
+        } catch (StorageException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+
+    }
+
+    private static void openContainer(CloudBlobContainer e) {
+        BlobContainerPermissions containerPermissions = new BlobContainerPermissions();
+        // Include public access in the permissions object.
+        containerPermissions
+                .setPublicAccess(BlobContainerPublicAccessType.CONTAINER);
+        // Set the permissions on the container.
+        try {
+            e.uploadPermissions(containerPermissions);
+        } catch (StorageException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+
+    }
+    
+    public static void main(String[] args)
+    {
+        copyBlob("democontainer", "democontainer", "Kalimba.mp3", 1, 3);
     }
 }
