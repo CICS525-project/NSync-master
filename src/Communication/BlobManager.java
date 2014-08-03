@@ -204,6 +204,7 @@ public class BlobManager {
                     try {
                         f.createNewFile();
                         destBlob.uploadFromFile(path);
+                        f.delete();
                     } catch (IOException ex) {
                         Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex);
                     }
