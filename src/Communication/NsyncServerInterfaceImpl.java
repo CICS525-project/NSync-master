@@ -18,7 +18,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
 
     private int serverId = 1;
 
-    private static final long serialVersionUID = 1L;    
+    private static final long serialVersionUID = 1L;
 
     protected NsyncServerInterfaceImpl() throws RemoteException {
         super();
@@ -27,21 +27,21 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
 
     @Override
     public boolean getPermission(String queuename) throws RemoteException {
-       /* String username = queuename.replaceAll("\\d", "");
-        ArrayList<Integer> oids = Connection.getOServerIds(1);
-        NsyncServerInterface server1 = Connection.isServerUp(oids.get(0), 9005);
-        boolean server1P = server1.getPermissionForServers(queuename);
+        /* String username = queuename.replaceAll("\\d", "");
+         ArrayList<Integer> oids = Connection.getOServerIds(1);
+         NsyncServerInterface server1 = Connection.isServerUp(oids.get(0), 9005);
+         boolean server1P = server1.getPermissionForServers(queuename);
 
-        NsyncServerInterface server2 = Connection.isServerUp(oids.get(1), 9005);
-        boolean server2P = server2.getPermissionForServers(queuename);
+         NsyncServerInterface server2 = Connection.isServerUp(oids.get(1), 9005);
+         boolean server2P = server2.getPermissionForServers(queuename);
         
-        boolean self = getPermissionOnSelf(username, queuename);
+         boolean self = getPermissionOnSelf(username, queuename);
         
-        if(self && server1P && server2P) {
-            return true;
-        } else {
-            return false;
-        }  */
+         if(self && server1P && server2P) {
+         return true;
+         } else {
+         return false;
+         }  */
         return true;
     }
 
@@ -104,13 +104,15 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
 
         if (s.getEvent().equals(SendObject.EventType.Delete)) {
             //call blobmanager to delete the file from the blob
-            BlobManager.deleteBlob(s.getUserID() + "/" + s.getFilePath() + "/" + s.getFileName());
+            BlobManager.deleteBlob(s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getFileName());
         }
 
         if (s.getEvent().equals(SendObject.EventType.Delete)) {
             //call blobmanager to delete the file from the blob
-            BlobManager.renameBlob(s.getUserID() + "/" + s.getFilePath() + "/" + s.getNewFileName(), s.getFilePath() + "/" + s.getFileName());
+            BlobManager.renameBlob(s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getNewFileName(), s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getFileName());
         }
+
+        //broadcast to other servers
         //return the sendObject to the client;
         return s;
     }
@@ -125,7 +127,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
             throws RemoteException {
         if (UserManager.createUser(username, password, email)) {
             BlobManager.createContainter(username);
-            
+
             //broadcast to other servers
             PublishToOtherServers.publisher(username, password, email);
             return true;
@@ -229,7 +231,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
                 }
             }
         });
-        t.start();        
+        t.start();
     }
 
     private long timeDifferenceInMinutes(Date laterDate, Date earlierDate) {

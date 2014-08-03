@@ -1,6 +1,7 @@
 package Communication;
 
 import Controller.ServerProperties;
+import com.microsoft.azure.storage.AccessCondition;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.BlobContainerPermissions;
@@ -9,12 +10,14 @@ import com.microsoft.azure.storage.blob.BlobListingDetails;
 import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CopyStatus;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.EnumSet;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -206,18 +209,20 @@ public class BlobManager {
                     }
                 }
             }
+            String leaseId = "";
             while (true) {
                 try {
-                    sourceBlob.acquireLease(60, "ddddddddddddddddddddddddddddddde");
+                    leaseId = sourceBlob.acquireLease(60, "ddddddddddddddddddddddddddddddde");
                     break;
                 } catch (Exception e) {
                     System.out.println("Trying to acquire lease on blob " + blobName);
                     e.printStackTrace();
                 }
             }
+            
+            
             //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
             destBlob.startCopyFromBlob(sourceBlob);
-            
 
             System.out.println(destBlob.getCopyState().getStatusDescription());
 
@@ -257,8 +262,13 @@ public class BlobManager {
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
-
     }
+    
+    /*private String generateLeaseId() {
+        String uuid = UUID.randomUUID().toString();
+        //System.out.println("uuid = " + uuid);
+        return uuid;
+    } */
     
     public static void main(String[] args)
     {

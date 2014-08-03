@@ -8,7 +8,8 @@ import Controller.ServerProperties;
 public class PublishToOtherServers {
 
     public static void publisher(SendObject s) {
-        String message = QueueManager.convertSendObjectToString(s);
+        //send the sendobject + the server that it is coming from
+        String message = QueueManager.convertSendObjectToString(s) + "___" + ServerProperties.serverId;
         publishToServer(message);
     }
 

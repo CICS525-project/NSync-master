@@ -23,6 +23,9 @@ public class Receiver {
                                 .deque(ServerProperties.queueName);
                         SendObject d = QueueManager
                                 .convertStringToSendObject(message);
+                        int serverId = Integer.parseInt(message.substring(message.lastIndexOf("___")));
+                        System.out.println("Received message from server " + serverId + " and the message is " + message);
+                        actOnMessage(d, serverId);
                         processMessageFromQueue(d);
                         // call to dbManager to update the SendObject missing
                     }
@@ -37,9 +40,23 @@ public class Receiver {
         // continually check to see if the queue has something in a thread
         ServerProperties.subscriber.start();
     }
-    
-    private static void actOnMessage(SendObject s) {
-        
+
+    private static void actOnMessage(SendObject s, int fromWhichServer) {
+        if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Create)) {
+            //client should do the update
+            String path = s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName();
+            BlobManager.copyBlob(s.getUserID(), s.getUserID(), path, fromWhichServer, ServerProperties.serverId);
+        }
+
+        if (s.getEvent().equals(SendObject.EventType.Delete)) {
+            //call blobmanager to delete the file from the blob
+            BlobManager.deleteBlob(s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName());
+        }
+
+        if (s.getEvent().equals(SendObject.EventType.Delete)) {
+            //call blobmanager to delete the file from the blob
+            BlobManager.renameBlob(s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getNewFileName(), s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName());
+        }
     }
 
     private static void processMessageFromQueue(SendObject s) {
@@ -85,6 +102,14 @@ public class Receiver {
         });
         // continually check to see if the queue has something in a thread
         u.start();
+    }
+
+    public static String pathParser(String path) {
+        if (path == null || path.equals("")) {
+            return "";
+        } else {
+            return path + "/";
+        }
     }
 
 }
