@@ -13,7 +13,7 @@ public class PublishToOtherServers {
     }
 
     public static void publisher(String username, String password, String email) {
-        String message = username + "|" + password + "|" + email;
+        String message = username + "___" + password + "___" + email;
         publishToUserQueue(message);
     }
 

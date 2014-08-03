@@ -137,7 +137,12 @@ public class QueueManager {
             // Output the stack trace.
             e.printStackTrace();
         }
-        return retrievedMessage.toString();
+        try {
+            return retrievedMessage.getMessageContentAsString();
+        } catch (StorageException ex) {
+            Logger.getLogger(QueueManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "_________";
     }
 
     public static void deleteQueue(String queueName) {

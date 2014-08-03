@@ -16,7 +16,7 @@ public class Receiver {
         ServerProperties.subscriber = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (true) {                    
+                while (true) {
                     if (QueueManager.getQueueLength(ServerProperties.queueName) > 0) {
                         // call to DBManager method to resolve conflicts missing
                         String message = QueueManager
@@ -54,7 +54,7 @@ public class Receiver {
     }
 
     public static void receiveFromUserQueue() {
-        
+
         QueueManager.createQueue(ServerProperties.userQueueName);
         // get the queue of the client
         Thread u = new Thread(new Runnable() {
@@ -65,11 +65,11 @@ public class Receiver {
 
                         String message = QueueManager
                                 .deque(ServerProperties.userQueueName);
-                        String[] comps = message.split("|");
-                        if(!comps[0].equals("") && comps[1].equals("") && comps[2].equals("")) {
-                            BlobManager.createContainter(comps[0]);
-                            UserManager.createUser(comps[0], comps[1], comps[2]);
-                        } 
+                        String[] comps = message.split("___");
+                        System.out.println("Message received is " + message);
+                        System.out.println(comps[0] + " " + comps[1] + " " + comps[2] + " and length is " + comps.length);
+                        BlobManager.createContainter(comps[0]);
+                        UserManager.createUser(comps[0], comps[1], comps[2]);
                     }
                     try {
                         Thread.sleep(10000);
