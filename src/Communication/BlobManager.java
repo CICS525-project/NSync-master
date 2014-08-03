@@ -114,11 +114,21 @@ public class BlobManager {
                     + " and the new path is " + url + newName);
             CloudBlob oldBlob = container.getBlockBlobReference(url + oldName);
             CloudBlob newBlob = container.getBlockBlobReference(url + newName);
-            newBlob.startCopyFromBlob(oldBlob);
+
+            String path = System.getProperty("user.dir") + "/" + oldBlob.getName();
+            File f = new File(path);
+            if (!f.exists()) {
+                f.createNewFile();
+            }
+            oldBlob.downloadToFile(path);
+            newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
             oldBlob.delete();
+            f.delete();
         } catch (URISyntaxException | InvalidKeyException | StorageException ex) {
             Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE,
                     null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -142,14 +152,23 @@ public class BlobManager {
                 CloudBlob newBlob = container.getBlockBlobReference(nName);
                 CloudBlob oldBlob = container.getBlockBlobReference(oName);
                 System.out.println("The blob names are " + blob.getName());
-                newBlob.startCopyFromBlob(oldBlob);
+                String path = System.getProperty("user.dir") + "/" + oldBlob.getName();
+                File f = new File(path);
+                if (!f.exists()) {
+                    f.createNewFile();
+                }
+                oldBlob.downloadToFile(path);
+                newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
                 oldBlob.delete();
+                f.delete();
             }
         } catch (URISyntaxException | InvalidKeyException | StorageException ex) {
             Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE,
                     null, ex);
             System.out.println("The message of the exception is "
                     + ex.getMessage());
+        } catch (IOException ex) {
+            Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -220,12 +239,22 @@ public class BlobManager {
                     e.printStackTrace();
                 }
             }
-            
-            
+
             //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
             destBlob.startCopyFromBlob(sourceBlob);
+            
+            String path = System.getProperty("user.dir") + "/" + sourceBlob.getName();
+            File f = new File(path);
+            if(!f.exists()) {
+                f.createNewFile();
+            }
+            sourceBlob.downloadToFile(path);
+            destBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
+            //oldBlob.delete();
+            f.delete();
+            
 
-            System.out.println(destBlob.getCopyState().getStatusDescription());
+            //System.out.println(destBlob.getCopyState().getStatusDescription());
 
             closeContainer(srcContainer);
             closeContainer(destContainer);
@@ -233,6 +262,8 @@ public class BlobManager {
         } catch (StorageException | URISyntaxException e) {
             //e.printStackTrace();
             System.out.println(e.getLocalizedMessage());
+        } catch (IOException ex) {
+            Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
@@ -264,15 +295,13 @@ public class BlobManager {
             e1.printStackTrace();
         }
     }
-    
+
     /*private String generateLeaseId() {
-        String uuid = UUID.randomUUID().toString();
-        //System.out.println("uuid = " + uuid);
-        return uuid;
-    } */
-    
-    public static void main(String[] args)
-    {
+     String uuid = UUID.randomUUID().toString();
+     //System.out.println("uuid = " + uuid);
+     return uuid;
+     } */
+    public static void main(String[] args) {
         copyBlob("democontainer", "democontainer", "Kalimba.mp3", 1, 3);
     }
 }
