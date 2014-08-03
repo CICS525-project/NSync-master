@@ -27,7 +27,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
 
     @Override
     public boolean getPermission(String queuename) throws RemoteException {
-        String username = queuename.replaceAll("\\d", "");
+       /* String username = queuename.replaceAll("\\d", "");
         ArrayList<Integer> oids = Connection.getOServerIds(1);
         NsyncServerInterface server1 = Connection.isServerUp(oids.get(0), 9005);
         boolean server1P = server1.getPermissionForServers(queuename);
@@ -41,7 +41,8 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
             return true;
         } else {
             return false;
-        }      
+        }  */
+        return true;
     }
 
     public boolean getPermissionForServers(String username) {
