@@ -22,7 +22,7 @@ public class PublishToOtherServers {
                 .getOServerIds(ServerProperties.serverId);
         for (Integer i : oids) {
             String conn = Connection.getStorageConnectionString(i);
-            QueueManager.enqueue(message, "UserEvents", conn);
+            QueueManager.enqueue(message, "userevents", conn);
         }
     }
 
@@ -31,7 +31,7 @@ public class PublishToOtherServers {
                 .getOServerIds(ServerProperties.serverId);
         for (Integer i : oids) {
             String conn = Connection.getStorageConnectionString(i);
-            QueueManager.enqueue(message, "FileEvents", conn);
+            QueueManager.enqueue(message, "fileevents", conn);
         }
     }
 }

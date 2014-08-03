@@ -231,7 +231,7 @@ public class QueueManager {
                         long timeCreated = Long.valueOf(queueName.replaceAll("\\D+", ""));
 
                         if (timeDifferenceInHours(new Date(), new Date(timeCreated)) > 2 && !ServerProperties.userQueues.containsKey(queueName)) {
-                            if (!queueName.equals("FileEvents") && !queueName.equals("UserEvents")) {
+                            if (!queueName.equals("fileevents") && !queueName.equals("userevents")) {
                                 System.out.println("Deleting " + queueName);
                                 deleteQueue(queueName);
                             }
