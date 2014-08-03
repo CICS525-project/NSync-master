@@ -69,7 +69,7 @@ public class Receiver {
                         System.out.println("Message received is " + message);
                         System.out.println(comps[0] + " " + comps[1] + " " + comps[2] + " and length is " + comps.length);
                         BlobManager.createContainter(comps[0]);
-                        UserManager.createUser(comps[0], comps[1], comps[2]);
+                        UserManager.createUserFromQueue(comps[0], comps[1], comps[2]);
                     }
                     try {
                         Thread.sleep(10000);
