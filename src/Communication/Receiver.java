@@ -11,13 +11,12 @@ import ServerDBManager.UserManager;
 public class Receiver {
 
     public static void receiveFromQueue() {
-
+        QueueManager.createQueue(ServerProperties.queueName);
         // get the queue of the client
         ServerProperties.subscriber = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (true) {
-                    Connection.serverId = 1;
+                while (true) {                    
                     if (QueueManager.getQueueLength(ServerProperties.queueName) > 0) {
                         // call to DBManager method to resolve conflicts missing
                         String message = QueueManager
@@ -55,6 +54,8 @@ public class Receiver {
     }
 
     public static void receiveFromUserQueue() {
+        
+        QueueManager.createQueue(ServerProperties.userQueueName);
         // get the queue of the client
         Thread u = new Thread(new Runnable() {
             @Override
