@@ -228,12 +228,14 @@ public class QueueManager {
                 while (true) {
                     for (CloudQueue cq : getListOfQueues("")) {
                         String queueName = cq.getName();
-                        long timeCreated = Long.valueOf(queueName.replaceAll("\\D+", ""));
+                        if (queueName.matches(".*\\d+.*")) {
+                            long timeCreated = Long.valueOf(queueName.replaceAll("\\D+", ""));
 
-                        if (timeDifferenceInHours(new Date(), new Date(timeCreated)) > 2 && !ServerProperties.userQueues.containsKey(queueName)) {
-                            if (!queueName.equals("fileevents") && !queueName.equals("userevents")) {
-                                System.out.println("Deleting " + queueName);
-                                deleteQueue(queueName);
+                            if (timeDifferenceInHours(new Date(), new Date(timeCreated)) > 2 && !ServerProperties.userQueues.containsKey(queueName)) {
+                                if (!queueName.equals("fileevents") && !queueName.equals("userevents")) {
+                                    System.out.println("Deleting " + queueName);
+                                    deleteQueue(queueName);
+                                }
                             }
                         }
                     }
