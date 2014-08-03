@@ -70,9 +70,11 @@ public class ServerDBManager {
         }
     }
     
-    /*public static boolean updateDB(SendObject sendObject){
+    public static boolean updateDB(SendObject sendObject){
         
-    }*/
+        
+        return false;
+    }
 
     public static void main(String[] args) {
         ServerDBManager.startServerDB();
