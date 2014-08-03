@@ -28,6 +28,10 @@ public class RegisterWithRMIServer {
 
             /* start the old queues deleter */
             QueueManager.clearOldQueues();
+            
+            /*receive from files and user queues */
+            Receiver.receiveFromQueue();
+            Receiver.receiveFromUserQueue();
 
         } catch (RemoteException ex) {
             ex.printStackTrace();
