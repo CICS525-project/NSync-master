@@ -31,7 +31,7 @@ public class RegisterWithRMIServer {
             
             /*receive from files and user queues */
             Receiver.receiveFromQueue();
-            Receiver.receiveFromUserQueue();
+            //Receiver.receiveFromUserQueue();
 
         } catch (RemoteException ex) {
             ex.printStackTrace();

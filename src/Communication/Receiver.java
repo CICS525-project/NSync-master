@@ -17,30 +17,47 @@ public class Receiver {
             @Override
             public void run() {
                 while (true) {
-                    if (QueueManager.getQueueLength(ServerProperties.queueName) > 0) {
-                        // call to DBManager method to resolve conflicts missing
-                        String message = QueueManager
-                                .deque(ServerProperties.queueName);
-                        SendObject d = QueueManager
-                                .convertStringToSendObject(message);
-                        int serverId = Integer.valueOf(message.substring(message.lastIndexOf("___")).replaceAll("\\D+",""));
-                       // int serverId = Integer.parseInt(message.substring(message.lastIndexOf("___")));
-                        System.out.println("Received message from server " + serverId + " and the message is " + message);
-                        actOnMessage(d, serverId);
-                        processMessageFromQueue(d);
-                        // call to dbManager to update the SendObject missing
+
+                    while (true) {
+                        if (QueueManager.getQueueLength(ServerProperties.userQueueName) > 0) {
+
+                            String message = QueueManager
+                                    .deque(ServerProperties.userQueueName);
+                            String[] comps = message.split("___");
+                            System.out.println("Message received is " + message);
+                            System.out.println(comps[0] + " " + comps[1] + " " + comps[2] + " and length is " + comps.length);
+                            BlobManager.createContainter(comps[0]);
+                            UserManager.createUserFromQueue(comps[0], comps[1], comps[2]);
+                        } else {
+                            break;
+                        }
                     }
-                    try {
-                        Thread.sleep(10000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        if (QueueManager.getQueueLength(ServerProperties.queueName) > 0) {
+                            // call to DBManager method to resolve conflicts missing
+                            String message = QueueManager
+                                    .deque(ServerProperties.queueName);
+                            SendObject d = QueueManager
+                                    .convertStringToSendObject(message);
+                            int serverId = Integer.valueOf(message.substring(message.lastIndexOf("___")).replaceAll("\\D+", ""));
+                            // int serverId = Integer.parseInt(message.substring(message.lastIndexOf("___")));
+                            System.out.println("Received message from server " + serverId + " and the message is " + message);
+                            actOnMessage(d, serverId);
+                            processMessageFromQueue(d);
+                            // call to dbManager to update the SendObject missing
+                        }
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
-        });
+
+            );
         // continually check to see if the queue has something in a thread
-        ServerProperties.subscriber.start();
-    }
+        ServerProperties.subscriber.start ();
+        }
 
     private static void actOnMessage(SendObject s, int fromWhichServer) {
         if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Modify)) {

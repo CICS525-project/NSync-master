@@ -231,29 +231,34 @@ public class BlobManager {
             }
             String leaseId = "";
             while (true) {
-                try {
-                    leaseId = sourceBlob.acquireLease(60, generateLeaseId());
+                if (sourceBlob.exists()) {
+                    try {
+                        leaseId = sourceBlob.acquireLease(60, generateLeaseId());
+                        break;
+                    } catch (Exception e) {
+                        System.out.println("Trying to acquire lease on blob " + blobName);
+                        e.printStackTrace();
+                    }
+                } else {
                     break;
-                } catch (Exception e) {
-                    System.out.println("Trying to acquire lease on blob " + blobName);
-                    e.printStackTrace();
                 }
             }
 
-            //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
-            destBlob.startCopyFromBlob(sourceBlob);
+            if (sourceBlob.exists()) {
+                //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
+                destBlob.startCopyFromBlob(sourceBlob);
 
-            String path = System.getProperty("user.home").replace("\\", "/") + "/" + sourceBlob.getName();
-            System.out.println("The path is " + path);
-            File f = new File(path);
-            if (!f.exists()) {
-                f.createNewFile();
+                String path = System.getProperty("user.home").replace("\\", "/") + "/" + sourceBlob.getName();
+                System.out.println("The path is " + path);
+                File f = new File(path);
+                if (!f.exists()) {
+                    f.createNewFile();
+                }
+                sourceBlob.downloadToFile(path);
+                destBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
+                //oldBlob.delete();
+                f.delete();
             }
-            sourceBlob.downloadToFile(path);
-            destBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
-            //oldBlob.delete();
-            f.delete();
-
             //System.out.println(destBlob.getCopyState().getStatusDescription());
             closeContainer(srcContainer);
             closeContainer(destContainer);
@@ -296,10 +301,11 @@ public class BlobManager {
     }
 
     private static String generateLeaseId() {
-     String uuid = UUID.randomUUID().toString();
-     //System.out.println("uuid = " + uuid);
-     return uuid;
-     } 
+        String uuid = UUID.randomUUID().toString();
+        //System.out.println("uuid = " + uuid);
+        return uuid;
+    }
+
     public static void main(String[] args) {
         copyBlob("democontainer", "democontainer", "Kalimba.mp3", 1, 3);
     }
