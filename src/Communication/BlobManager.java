@@ -1,7 +1,6 @@
 package Communication;
 
 import Controller.ServerProperties;
-import com.microsoft.azure.storage.AccessCondition;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.BlobContainerPermissions;
@@ -10,7 +9,6 @@ import com.microsoft.azure.storage.blob.BlobListingDetails;
 import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CopyStatus;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import java.io.File;
 import java.io.IOException;
@@ -22,17 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class BlobManager {
-    // add the username to this string instead of default
-
-    private static String containerName = "democontainer"; // User.getUsername();
-    private static String url = "https://portalvhdsh8ghz0s9b7mx9.blob.core.windows.net/"
-            + containerName + "/";
-
-    // remember to set container name back to user if you have to change it for
-    // any reason
-    public static void setContainerName(String newContainerName) {
-        containerName = newContainerName;
-    }
 
     public synchronized static void createContainter(String containerName) {
         containerName = containerName.toLowerCase();
@@ -50,11 +37,14 @@ public class BlobManager {
     }
 
     public synchronized static void deleteBlob(String fullPath) {
-        String blobName = fullPath;
+
+        String blobName = fullPath.substring(fullPath.indexOf("/") + 1);
+        String containerName = fullPath.substring(0, fullPath.indexOf("/"));
+
         if (blobName.contains("\\")) {
             blobName = blobName.replace("\\", "/");
         }
-        System.out.println("Blob is " + blobName);
+        System.out.println("The blobname is " + blobName + " and the containerName is " + containerName);
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
                     .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
@@ -77,7 +67,7 @@ public class BlobManager {
         }
     }
 
-    public synchronized static void deleteBlobContainer() {
+    public synchronized static void deleteBlobContainer(String containerName) {
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
                     .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
@@ -105,8 +95,8 @@ public class BlobManager {
 
     private static void renameSingleBlob(String oldName, String newName) {
         String containerName = oldName.substring(0, oldName.indexOf("/"));
-        oldName = oldName.substring(oldName.indexOf("/")+1, oldName.length());
-        newName = newName.substring(newName.indexOf("/")+1, newName.length());
+        oldName = oldName.substring(oldName.indexOf("/") + 1, oldName.length());
+        newName = newName.substring(newName.indexOf("/") + 1, newName.length());
         System.out.println("The container name is " + containerName);
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
@@ -114,8 +104,8 @@ public class BlobManager {
             CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
             CloudBlobContainer container = blobClient
                     .getContainerReference(containerName);
-            System.out.println("The old path is " + url + oldName
-                    + " and the new path is " + url + newName);
+            System.out.println("The old path is " + oldName
+                    + " and the new path is " + newName);
             CloudBlob oldBlob = container.getBlockBlobReference(oldName);
             CloudBlob newBlob = container.getBlockBlobReference(newName);
 
@@ -140,8 +130,8 @@ public class BlobManager {
 
     private static void renameBlobDir(String oldName, String newName) {
         String containerName = oldName.substring(0, oldName.indexOf("/"));
-        oldName = oldName.substring(oldName.indexOf("/")+1, oldName.length());
-        newName = newName.substring(newName.indexOf("/")+1, newName.length());
+        oldName = oldName.substring(oldName.indexOf("/") + 1, oldName.length());
+        newName = newName.substring(newName.indexOf("/") + 1, newName.length());
         System.out.println("The container name is " + containerName);
         System.out.println("The new name is " + newName);
         try {
@@ -242,7 +232,7 @@ public class BlobManager {
             String leaseId = "";
             while (true) {
                 try {
-                    leaseId = sourceBlob.acquireLease(60, "ddddddddddddddddddddddddddddddde");
+                    leaseId = sourceBlob.acquireLease(60, generateLeaseId());
                     break;
                 } catch (Exception e) {
                     System.out.println("Trying to acquire lease on blob " + blobName);
@@ -252,21 +242,19 @@ public class BlobManager {
 
             //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
             destBlob.startCopyFromBlob(sourceBlob);
-            
+
             String path = System.getProperty("user.home").replace("\\", "/") + "/" + sourceBlob.getName();
             System.out.println("The path is " + path);
             File f = new File(path);
-            if(!f.exists()) {
+            if (!f.exists()) {
                 f.createNewFile();
             }
             sourceBlob.downloadToFile(path);
             destBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
             //oldBlob.delete();
             f.delete();
-            
 
             //System.out.println(destBlob.getCopyState().getStatusDescription());
-
             closeContainer(srcContainer);
             closeContainer(destContainer);
 
@@ -307,11 +295,11 @@ public class BlobManager {
         }
     }
 
-    /*private String generateLeaseId() {
+    private static String generateLeaseId() {
      String uuid = UUID.randomUUID().toString();
      //System.out.println("uuid = " + uuid);
      return uuid;
-     } */
+     } 
     public static void main(String[] args) {
         copyBlob("democontainer", "democontainer", "Kalimba.mp3", 1, 3);
     }

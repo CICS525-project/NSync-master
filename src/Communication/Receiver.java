@@ -45,7 +45,7 @@ public class Receiver {
     private static void actOnMessage(SendObject s, int fromWhichServer) {
         if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Modify)) {
             //client should do the update
-            String path = s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName();
+            String path = pathParser(s.getFilePath()) + s.getFileName();
             BlobManager.copyBlob(s.getUserID(), s.getUserID(), path, fromWhichServer, ServerProperties.serverId);
         }
 
