@@ -20,7 +20,7 @@ public class ServerDBManager {
 
     public static void startServerDB() {
         // Connection string for your SQL Database server 1.
-        String connectionString = "jdbc:sqlserver://e55t52o9fy.database.windows.net:1433"
+        /*String connectionString = "jdbc:sqlserver://e55t52o9fy.database.windows.net:1433"
                 + ";"
                 + "database=db_like"
                 + ";"
@@ -31,10 +31,12 @@ public class ServerDBManager {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         } catch (ClassNotFoundException cnfe) {
             System.out.println("ClassNotFoundException " + cnfe.getMessage());
-        }
+        }*/
+        
+        
         try {
-            connection = DriverManager.getConnection(connectionString);
-
+            //connection = DriverManager.getConnection(connectionString);
+            connection = DBProperties.establishConnection();
             //checking to see if the "files" table exists on the server DB
             DatabaseMetaData md = connection.getMetaData();
             ResultSet filesTable = md.getTables(null, null, "files", null);
@@ -273,7 +275,12 @@ public class ServerDBManager {
     public static void main(String[] args) {
         ServerDBManager.startServerDB();
 
-        java.sql.Timestamp TS = new java.sql.Timestamp(new java.util.Date().getTime());
+        Date date= new java.util.Date();
+        SendObject obj = new SendObject("fileName","filePath", EventType.Create , date, 
+           false, null, "hash");
+        obj.setID("IDIDIDI");
+        obj.setUserID("user");
+        updateDB(obj);
         /*
          System.out.println("testing insert");
          int result = serverInsert("file_id3", "file_path/folder1/folder", "file_name", "file_hash", "user_id", TS );
