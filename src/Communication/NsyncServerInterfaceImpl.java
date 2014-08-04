@@ -116,6 +116,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         }
 
         //broadcast to other servers
+        PublishToOtherServers.publisher(s);
         //return the sendObject to the client;
         return s;
     }

@@ -57,6 +57,13 @@ public class Receiver {
             //call blobmanager to delete the file from the blob
             BlobManager.renameBlob(s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getNewFileName(), s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName());
         }
+
+        //add to all the queues that have that username as prefix
+        for (CloudQueue c : QueueManager.getListOfQueues(s.getUserID())) {
+            QueueManager.enqueue(QueueManager.convertSendObjectToString(s), c.getName());
+        }
+
+        //add to the queues of the people the user is sharing the file with
     }
 
     private static void processMessageFromQueue(SendObject s) {
@@ -71,7 +78,6 @@ public class Receiver {
                 e.printStackTrace();
             }
         }
-
     }
 
     public static void receiveFromUserQueue() {
