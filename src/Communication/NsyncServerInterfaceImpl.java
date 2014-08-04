@@ -98,6 +98,9 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         // call the db update method to insert into the db
         // if insert is successfully done
         // check the value of the event
+        
+        System.out.println("The path from the sendobject is " + s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getFileName());
+        
         if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Modify)) {
             //client should do the update
         }

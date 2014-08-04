@@ -104,6 +104,10 @@ public class BlobManager {
     }
 
     private static void renameSingleBlob(String oldName, String newName) {
+        String containerName = oldName.substring(0, oldName.indexOf("/"));
+        oldName = oldName.substring(oldName.indexOf("/")+1, oldName.length());
+        newName = newName.substring(newName.indexOf("/")+1, newName.length());
+        System.out.println("The container name is " + containerName);
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
                     .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
@@ -112,10 +116,12 @@ public class BlobManager {
                     .getContainerReference(containerName);
             System.out.println("The old path is " + url + oldName
                     + " and the new path is " + url + newName);
-            CloudBlob oldBlob = container.getBlockBlobReference(url + oldName);
-            CloudBlob newBlob = container.getBlockBlobReference(url + newName);
+            CloudBlob oldBlob = container.getBlockBlobReference(oldName);
+            CloudBlob newBlob = container.getBlockBlobReference(newName);
 
-            String path = System.getProperty("user.dir") + "/" + oldBlob.getName();
+            String path = System.getProperty("user.home").replace("\\", "/") + "/" + oldName;
+            //String path = System.getProperty("user.home").replace("\\", "/") + "/" + oldBlob.getName().substring(oldBlob.getName().lastIndexOf("/"));
+            System.out.println("The path is " + path);
             File f = new File(path);
             if (!f.exists()) {
                 f.createNewFile();
@@ -133,6 +139,10 @@ public class BlobManager {
     }
 
     private static void renameBlobDir(String oldName, String newName) {
+        String containerName = oldName.substring(0, oldName.indexOf("/"));
+        oldName = oldName.substring(oldName.indexOf("/")+1, oldName.length());
+        newName = newName.substring(newName.indexOf("/")+1, newName.length());
+        System.out.println("The container name is " + containerName);
         System.out.println("The new name is " + newName);
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
@@ -152,7 +162,7 @@ public class BlobManager {
                 CloudBlob newBlob = container.getBlockBlobReference(nName);
                 CloudBlob oldBlob = container.getBlockBlobReference(oName);
                 System.out.println("The blob names are " + blob.getName());
-                String path = System.getProperty("user.dir") + "/" + oldBlob.getName();
+                String path = System.getProperty("user.home").replace("\\", "/") + "/" + oldName;
                 File f = new File(path);
                 if (!f.exists()) {
                     f.createNewFile();
@@ -243,7 +253,8 @@ public class BlobManager {
             //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
             destBlob.startCopyFromBlob(sourceBlob);
             
-            String path = System.getProperty("user.dir") + "/" + sourceBlob.getName();
+            String path = System.getProperty("user.home").replace("\\", "/") + "/" + sourceBlob.getName();
+            System.out.println("The path is " + path);
             File f = new File(path);
             if(!f.exists()) {
                 f.createNewFile();
