@@ -23,7 +23,8 @@ public class Receiver {
                                 .deque(ServerProperties.queueName);
                         SendObject d = QueueManager
                                 .convertStringToSendObject(message);
-                        int serverId = Integer.parseInt(message.substring(message.lastIndexOf("___")));
+                        int serverId = Integer.valueOf(message.substring(message.lastIndexOf("___")).replaceAll("\\D+",""));
+                       // int serverId = Integer.parseInt(message.substring(message.lastIndexOf("___")));
                         System.out.println("Received message from server " + serverId + " and the message is " + message);
                         actOnMessage(d, serverId);
                         processMessageFromQueue(d);
