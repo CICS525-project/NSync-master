@@ -23,7 +23,8 @@ public class Receiver {
                                 .deque(ServerProperties.queueName);
                         SendObject d = QueueManager
                                 .convertStringToSendObject(message);
-                        int serverId = Integer.parseInt(message.substring(message.lastIndexOf("___")));
+                        int serverId = Integer.valueOf(message.substring(message.lastIndexOf("___")).replaceAll("\\D+",""));
+                       // int serverId = Integer.parseInt(message.substring(message.lastIndexOf("___")));
                         System.out.println("Received message from server " + serverId + " and the message is " + message);
                         actOnMessage(d, serverId);
                         processMessageFromQueue(d);
@@ -42,9 +43,9 @@ public class Receiver {
     }
 
     private static void actOnMessage(SendObject s, int fromWhichServer) {
-        if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Create)) {
+        if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Modify)) {
             //client should do the update
-            String path = s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName();
+            String path = pathParser(s.getFilePath()) + s.getFileName();
             BlobManager.copyBlob(s.getUserID(), s.getUserID(), path, fromWhichServer, ServerProperties.serverId);
         }
 
@@ -53,10 +54,17 @@ public class Receiver {
             BlobManager.deleteBlob(s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName());
         }
 
-        if (s.getEvent().equals(SendObject.EventType.Delete)) {
+        if (s.getEvent().equals(SendObject.EventType.Rename)) {
             //call blobmanager to delete the file from the blob
             BlobManager.renameBlob(s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getNewFileName(), s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName());
         }
+
+        //add to all the queues that have that username as prefix
+        for (CloudQueue c : QueueManager.getListOfQueues(s.getUserID())) {
+            QueueManager.enqueue(QueueManager.convertSendObjectToString(s), c.getName());
+        }
+
+        //add to the queues of the people the user is sharing the file with
     }
 
     private static void processMessageFromQueue(SendObject s) {
@@ -71,7 +79,6 @@ public class Receiver {
                 e.printStackTrace();
             }
         }
-
     }
 
     public static void receiveFromUserQueue() {

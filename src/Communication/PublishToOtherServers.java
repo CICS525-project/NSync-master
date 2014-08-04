@@ -1,9 +1,9 @@
 package Communication;
 
-import java.util.ArrayList;
-
 import Controller.SendObject;
 import Controller.ServerProperties;
+import com.microsoft.azure.storage.queue.CloudQueue;
+import java.util.ArrayList;
 
 public class PublishToOtherServers {
 
@@ -11,6 +11,12 @@ public class PublishToOtherServers {
         //send the sendobject + the server that it is coming from
         String message = QueueManager.convertSendObjectToString(s) + "___" + ServerProperties.serverId;
         publishToServer(message);
+    }
+    
+    public static void publishToOtherClientsOnSameServer(SendObject s) {
+        for(CloudQueue c:QueueManager.getListOfQueues(s.getUserID())) {
+            QueueManager.enqueue(QueueManager.convertSendObjectToString(s), c.getName());
+        }
     }
 
     public static void publisher(String username, String password, String email) {

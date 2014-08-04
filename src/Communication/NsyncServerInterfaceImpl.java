@@ -98,7 +98,10 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         // call the db update method to insert into the db
         // if insert is successfully done
         // check the value of the event
-        if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Create)) {
+        
+        System.out.println("The path from the sendobject is " + s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getFileName());
+        
+        if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Modify)) {
             //client should do the update
         }
 
@@ -107,12 +110,13 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
             BlobManager.deleteBlob(s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getFileName());
         }
 
-        if (s.getEvent().equals(SendObject.EventType.Delete)) {
+        if (s.getEvent().equals(SendObject.EventType.Rename)) {
             //call blobmanager to delete the file from the blob
             BlobManager.renameBlob(s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getNewFileName(), s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getFileName());
         }
 
         //broadcast to other servers
+        PublishToOtherServers.publisher(s);
         //return the sendObject to the client;
         return s;
     }
