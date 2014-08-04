@@ -129,9 +129,11 @@ public class Receiver {
     }
 
     public static String pathParser(String path) {
-        if (path == null || path.equals("")) {
+        if (path.trim() == null || path.trim().equals("")) {
+            System.out.println("The path is empty");
             return "";
         } else {
+            System.out.println("The path is " + path);
             return path + "/";
         }
     }
