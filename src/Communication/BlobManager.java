@@ -246,7 +246,7 @@ public class BlobManager {
 
             if (sourceBlob.exists()) {
                 //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
-                destBlob.startCopyFromBlob(sourceBlob);
+                //destBlob.startCopyFromBlob(sourceBlob);
 
                 String path = System.getProperty("user.home").replace("\\", "/") + "/" + sourceBlob.getName();
                 System.out.println("The path is " + path);
