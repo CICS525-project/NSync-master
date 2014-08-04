@@ -258,12 +258,13 @@ public class QueueManager {
 
     public static void main(String[] args) {
         // System.out.println(User.getUsername());
-        //getListOfQueues("democontainer");
-        //enqueue("Yanki don kolo", "democontainer1406268314962");
-        //getQueueLength("democontainer1406268314962");
-        //deque("democontainer1406268314962");
-        //getQueueLength("democontainer1406268314962");
-
+        for(CloudQueue s:getListOfQueues("demo")) {
+            try {
+                s.delete();
+            } catch (StorageException ex) {
+                Logger.getLogger(QueueManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     public static String convertSendObjectToString(SendObject o) {
