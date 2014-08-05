@@ -62,6 +62,8 @@ public class SendObject implements Serializable {
         this.enteredIntoDB = false;
         this.setHash(hash);
         this.setUserID(userID);
+        
+        sharedWith = null;
     }
 
     /**
