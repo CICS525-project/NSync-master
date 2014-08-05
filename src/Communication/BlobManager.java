@@ -9,6 +9,7 @@ import com.microsoft.azure.storage.blob.BlobListingDetails;
 import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.LeaseState;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import java.io.File;
 import java.io.IOException;
@@ -60,19 +61,24 @@ public class BlobManager {
                     details, null, null)) {
 
                 blob = (CloudBlob) blobItem;
+                blob.downloadAttributes();
                 System.out.println("Blob name found is " + blob.getName());
-                blob.breakLease(0);
+                if (blob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                    blob.breakLease(0);
+                }
                 blob.delete();
             }
         } catch (URISyntaxException | InvalidKeyException | StorageException ex) {
             Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE,
                     null, ex);
             try {
-                blob.breakLease(0);
+                if (blob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                    blob.breakLease(0);
+                }
             } catch (StorageException ex1) {
                 Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex1);
             }
-            
+
         }
     }
 
@@ -107,7 +113,7 @@ public class BlobManager {
         oldName = oldName.substring(oldName.indexOf("/") + 1, oldName.length());
         newName = newName.substring(newName.indexOf("/") + 1, newName.length());
         System.out.println("The container name is " + containerName);
-         CloudBlob oldBlob = null;
+        CloudBlob oldBlob = null;
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
                     .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
@@ -128,7 +134,9 @@ public class BlobManager {
             }
             oldBlob.downloadToFile(path);
             newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
-            oldBlob.breakLease(0);
+            if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                    oldBlob.breakLease(0);
+                }
             oldBlob.delete();
             f.delete();
         } catch (URISyntaxException | InvalidKeyException | StorageException ex) {
@@ -171,7 +179,9 @@ public class BlobManager {
                 }
                 oldBlob.downloadToFile(path);
                 newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
-                oldBlob.breakLease(0);
+                if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                    oldBlob.breakLease(0);
+                }
                 oldBlob.delete();
                 f.delete();
             }
@@ -181,7 +191,9 @@ public class BlobManager {
             System.out.println("The message of the exception is "
                     + ex.getMessage());
             try {
-                oldBlob.breakLease(0);
+                if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                    oldBlob.breakLease(0);
+                }
             } catch (StorageException ex1) {
                 Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex1);
             }
@@ -331,10 +343,13 @@ public class BlobManager {
             CloudBlob b = container.getBlockBlobReference(blobName);
 
             if (b.exists()) {
-                b.breakLease(30);
-                 System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
+                b.downloadAttributes();
+                if (b.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                    b.breakLease(30);
+                }
+                System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
                 String leaseID = b.acquireLease(null, generateLeaseId());
-              //  System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
+                //  System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
                 ServerProperties.leasedBlobs.put(b, new Date());
                 return leaseID;
             } else {
