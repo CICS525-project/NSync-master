@@ -10,6 +10,8 @@ public class PublishToOtherServers {
     public static void publisher(SendObject s) {
         //send the sendobject + the server that it is coming from
         String message = QueueManager.convertSendObjectToString(s) + "___" + ServerProperties.serverId;
+        System.out.println("Publishing to other clients on the same server and to other servers " + message);
+        publishToOtherClientsOnSameServer(s);
         publishToServer(message);
     }
     

@@ -211,9 +211,7 @@ public class QueueManager {
             // Retrieve the newly cached approximate message count.
             cachedMessageCount = queue.getApproximateMessageCount();
 
-            // Display the queue length.
-            System.out.println(String.format("Queue length: %d",
-                    cachedMessageCount));
+          
         } catch (Exception e) {
             // Output the stack trace.
             e.printStackTrace();
