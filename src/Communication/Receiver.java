@@ -45,7 +45,7 @@ public class Receiver {
                         // int serverId = Integer.parseInt(message.substring(message.lastIndexOf("___")));
                         System.out.println("Received message from server " + serverId + " and the message is " + message);
                         
-                        while (true) {
+                      /*  while (true) {
                             String lease = BlobManager.acquireLease(pathParser(d.getFilePath()) + d.getFileName(), d.getUserID(), serverId);
                             if (lease == null) {
                                 try {
@@ -57,7 +57,7 @@ public class Receiver {
                             } else {
                                 break;
                             }
-                        }
+                        } */
                         ServerDBManager.updateDB(d);
                         actOnMessage(d, serverId);
                         processMessageFromQueue(d);
