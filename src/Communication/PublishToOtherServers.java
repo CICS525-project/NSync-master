@@ -7,17 +7,19 @@ import java.util.ArrayList;
 
 public class PublishToOtherServers {
 
-    public static void publisher(SendObject s) {
+    public static void publisher(SendObject s, String queuename) {
         //send the sendobject + the server that it is coming from
         String message = QueueManager.convertSendObjectToString(s) + "___" + ServerProperties.serverId;
         System.out.println("Publishing to other clients on the same server and to other servers " + message);
-        publishToOtherClientsOnSameServer(s);
+        publishToOtherClientsOnSameServer(s, queuename);
         publishToServer(message);
     }
-    
-    public static void publishToOtherClientsOnSameServer(SendObject s) {
-        for(CloudQueue c:QueueManager.getListOfQueues(s.getUserID())) {
-            QueueManager.enqueue(QueueManager.convertSendObjectToString(s), c.getName());
+
+    public static void publishToOtherClientsOnSameServer(SendObject s, String queuename) {
+        for (CloudQueue c : QueueManager.getListOfQueues(s.getUserID())) {
+            if (!c.getName().equals(queuename)) {
+                QueueManager.enqueue(QueueManager.convertSendObjectToString(s), c.getName());
+            }
         }
     }
 

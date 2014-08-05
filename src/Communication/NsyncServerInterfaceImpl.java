@@ -95,11 +95,13 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
     }
 
     @Override
-    public SendObject serverDBUpdate(SendObject s) throws RemoteException {
+    public SendObject serverDBUpdate(SendObject s, String queuename) throws RemoteException {
 
         // call the db update method to insert into the db
         // if insert is successfully done
         // check the value of the event
+        
+        ServerDBManager.updateDB(s);
         
         System.out.println("The path from the sendobject is " + s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getFileName());
         
@@ -118,7 +120,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         }
 
         //broadcast to other servers
-        PublishToOtherServers.publisher(s);
+        PublishToOtherServers.publisher(s, queuename);
         //return the sendObject to the client;
         return s;
     }
