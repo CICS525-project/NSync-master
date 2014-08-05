@@ -345,10 +345,10 @@ public class BlobManager {
             if (b.exists()) {
                 b.downloadAttributes();
                 if (b.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
-                    b.breakLease(30);
+                    b.breakLease(15);
                 }
                 System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
-                String leaseID = b.acquireLease(null, generateLeaseId());
+                String leaseID = b.acquireLease(60, generateLeaseId());
                 //  System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
                 ServerProperties.leasedBlobs.put(b, new Date());
                 return leaseID;
