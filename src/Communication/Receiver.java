@@ -46,7 +46,7 @@ public class Receiver {
                             // call to dbManager to update the SendObject missing
                         }
                         try {
-                            Thread.sleep(10000);
+                            Thread.sleep(5000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -60,9 +60,19 @@ public class Receiver {
         }
 
     private static void actOnMessage(SendObject s, int fromWhichServer) {
+        
+         while(true) {
+                String lease = BlobManager.acquireLease(pathParser(s.getFilePath()) + s.getFileName(), s.getUserID(), fromWhichServer);
+                if(lease == null) {
+                    continue;
+                } else {
+                    break;
+                }
+            }  
+        
         if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Modify)) {
             //client should do the update
-            String path = pathParser(s.getFilePath()) + s.getFileName();
+            String path = pathParser(s.getFilePath()) + s.getFileName();                     
             BlobManager.copyBlob(s.getUserID(), s.getUserID(), path, fromWhichServer, ServerProperties.serverId);
         }
 
@@ -117,7 +127,7 @@ public class Receiver {
                         UserManager.createUserFromQueue(comps[0], comps[1], comps[2]);
                     }
                     try {
-                        Thread.sleep(10000);
+                        Thread.sleep(5000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

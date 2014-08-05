@@ -331,8 +331,10 @@ public class BlobManager {
             CloudBlob b = container.getBlockBlobReference(blobName);
 
             if (b.exists()) {
+                b.breakLease(30);
+                 System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
                 String leaseID = b.acquireLease(null, generateLeaseId());
-                // b.breakLease(0);
+              //  System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
                 ServerProperties.leasedBlobs.put(b, new Date());
                 return leaseID;
             } else {
