@@ -5,6 +5,7 @@ import Controller.ServerProperties;
 
 import com.microsoft.azure.storage.*;
 import com.microsoft.azure.storage.blob.CloudBlob;
+import com.microsoft.azure.storage.blob.LeaseState;
 import com.microsoft.azure.storage.queue.*;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
@@ -211,7 +212,6 @@ public class QueueManager {
             // Retrieve the newly cached approximate message count.
             cachedMessageCount = queue.getApproximateMessageCount();
 
-          
         } catch (Exception e) {
             // Output the stack trace.
             e.printStackTrace();
@@ -257,8 +257,11 @@ public class QueueManager {
                         if (timeDifferenceInMinutes(new Date(), date) >= 5) {
                             try {
                                 if (b.exists()) {
-                                    b.breakLease(0);
-                                    ServerProperties.leasedBlobs.remove(b);
+                                    b.downloadAttributes();
+                                    if (b.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                                        b.breakLease(0);
+                                        ServerProperties.leasedBlobs.remove(b);
+                                    }
                                 }
                             } catch (StorageException ex) {
                                 Logger.getLogger(QueueManager.class.getName()).log(Level.SEVERE, null, ex);
