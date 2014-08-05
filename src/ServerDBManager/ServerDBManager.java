@@ -315,7 +315,7 @@ public class ServerDBManager {
 
         try {
             PreparedStatement ps = connection
-                    .prepareStatement("SELECT * FROM files WHERE ? > last_local_update AND user_id = ?");
+                    .prepareStatement("SELECT * FROM files WHERE last_local_update > ? AND user_id = ?");
             ps.setTimestamp(1, TS);
             ps.setString(2, userID);
             rs = ps.executeQuery();
