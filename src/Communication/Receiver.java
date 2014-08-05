@@ -1,12 +1,15 @@
 package Communication;
 
-import java.util.ArrayList;
+import Controller.SendObject;
+import Controller.ServerProperties;
+import ServerDBManager.ServerDBManager;
+import ServerDBManager.UserManager;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
-import Controller.SendObject;
-import Controller.ServerProperties;
-import ServerDBManager.UserManager;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Receiver {
 
@@ -32,47 +35,52 @@ public class Receiver {
                             break;
                         }
                     }
-                        if (QueueManager.getQueueLength(ServerProperties.queueName) > 0) {
-                            // call to DBManager method to resolve conflicts missing
-                            String message = QueueManager
-                                    .deque(ServerProperties.queueName);
-                            SendObject d = QueueManager
-                                    .convertStringToSendObject(message);
-                            int serverId = Integer.valueOf(message.substring(message.lastIndexOf("___")).replaceAll("\\D+", ""));
-                            // int serverId = Integer.parseInt(message.substring(message.lastIndexOf("___")));
-                            System.out.println("Received message from server " + serverId + " and the message is " + message);
-                            actOnMessage(d, serverId);
-                            processMessageFromQueue(d);
-                            // call to dbManager to update the SendObject missing
+                    if (QueueManager.getQueueLength(ServerProperties.queueName) > 0) {
+                        // call to DBManager method to resolve conflicts missing
+                        String message = QueueManager
+                                .deque(ServerProperties.queueName);
+                        SendObject d = QueueManager
+                                .convertStringToSendObject(message);
+                        int serverId = Integer.valueOf(message.substring(message.lastIndexOf("___")).replaceAll("\\D+", ""));
+                        // int serverId = Integer.parseInt(message.substring(message.lastIndexOf("___")));
+                        System.out.println("Received message from server " + serverId + " and the message is " + message);
+                        
+                        while (true) {
+                            String lease = BlobManager.acquireLease(pathParser(d.getFilePath()) + d.getFileName(), d.getUserID(), serverId);
+                            if (lease == null) {
+                                try {
+                                    Thread.sleep(35000);
+                                } catch (InterruptedException ex) {
+                                    Logger.getLogger(Receiver.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                continue;
+                            } else {
+                                break;
+                            }
                         }
-                        try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                        ServerDBManager.updateDB(d);
+                        actOnMessage(d, serverId);
+                        processMessageFromQueue(d);
+                        // call to dbManager to update the SendObject missing
+                    }
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             }
-
-            );
-        // continually check to see if the queue has something in a thread
-        ServerProperties.subscriber.start ();
         }
+        );
+        // continually check to see if the queue has something in a thread
+        ServerProperties.subscriber.start();
+    }
 
     private static void actOnMessage(SendObject s, int fromWhichServer) {
-        
-         while(true) {
-                String lease = BlobManager.acquireLease(pathParser(s.getFilePath()) + s.getFileName(), s.getUserID(), fromWhichServer);
-                if(lease == null) {
-                    continue;
-                } else {
-                    break;
-                }
-            }  
-        
+
         if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Modify)) {
             //client should do the update
-            String path = pathParser(s.getFilePath()) + s.getFileName();                     
+            String path = pathParser(s.getFilePath()) + s.getFileName();
             BlobManager.copyBlob(s.getUserID(), s.getUserID(), path, fromWhichServer, ServerProperties.serverId);
         }
 

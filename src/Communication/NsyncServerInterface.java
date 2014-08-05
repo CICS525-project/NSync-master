@@ -1,8 +1,8 @@
 package Communication;
+import Controller.SendObject;
 import java.rmi.*;
 
-import Controller.SendObject;
-import java.util.Date;
+import java.sql.Timestamp;
 
 public interface NsyncServerInterface extends Remote {      
 	 
@@ -12,7 +12,7 @@ public interface NsyncServerInterface extends Remote {
     
     public SendObject serverDBUpdate(SendObject s) throws RemoteException;
     
-    public boolean serverToClientSync(Date lastTS, String qName) throws RemoteException;
+    public void serverToClientSync(Timestamp lastTS, String qName) throws RemoteException;
     
     public boolean isUp() throws RemoteException;
     

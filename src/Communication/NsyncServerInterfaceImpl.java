@@ -2,9 +2,11 @@ package Communication;
 
 import Controller.SendObject;
 import Controller.ServerProperties;
+import ServerDBManager.ServerDBManager;
 import ServerDBManager.UserManager;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -180,8 +182,8 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
     }
 
     @Override
-    public boolean serverToClientSync(Date lastTS, String qName) throws RemoteException {
-        try {
+    public void serverToClientSync(Timestamp lastTS, String qName) throws RemoteException {
+       /* try {
             //assuming I get back an arraylist of sendobjects
             ArrayList<SendObject> toSync = new ArrayList<SendObject>(); //this should be Yasmin's method 
             for (SendObject s : toSync) {
@@ -191,7 +193,8 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
             return true;
         } catch (Exception e) {
             return false;
-        }
+        } */
+        ServerDBManager.DBServerToClientList(qName.replaceAll("\\d",""), lastTS, qName);
     }
 
     @Override
