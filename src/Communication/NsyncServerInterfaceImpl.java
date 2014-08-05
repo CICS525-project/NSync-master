@@ -26,22 +26,18 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
     }
 
     @Override
-    public boolean getPermission(String queuename) throws RemoteException {
-        /* String username = queuename.replaceAll("\\d", "");
-         ArrayList<Integer> oids = Connection.getOServerIds(1);
-         NsyncServerInterface server1 = Connection.isServerUp(oids.get(0), 9005);
-         boolean server1P = server1.getPermissionForServers(queuename);
-
-         NsyncServerInterface server2 = Connection.isServerUp(oids.get(1), 9005);
-         boolean server2P = server2.getPermissionForServers(queuename);
+    public boolean getPermission(SendObject s) throws RemoteException {
         
-         boolean self = getPermissionOnSelf(username, queuename);
+        String blobName = Receiver.pathParser(s.getFilePath()) + s.getFileName();
+        String containerName = s.getUserID();
         
-         if(self && server1P && server2P) {
-         return true;
-         } else {
-         return false;
-         }  */
+        String server1Lease = BlobManager.acquireLease(blobName, containerName, 1);
+        String server2Lease = BlobManager.acquireLease(blobName, containerName, 2);
+        String server3Lease = BlobManager.acquireLease(blobName, containerName, 3);
+        
+        if(server1Lease == null || server2Lease == null || server3Lease == null) {
+            return false;
+        }        
         return true;
     }
 

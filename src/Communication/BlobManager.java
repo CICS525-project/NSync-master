@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -45,6 +46,7 @@ public class BlobManager {
             blobName = blobName.replace("\\", "/");
         }
         System.out.println("The blobname is " + blobName + " and the containerName is " + containerName);
+        CloudBlob blob = null;
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
                     .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
@@ -57,13 +59,20 @@ public class BlobManager {
             for (ListBlobItem blobItem : container.listBlobs(blobName, true,
                     details, null, null)) {
 
-                CloudBlob blob = (CloudBlob) blobItem;
+                blob = (CloudBlob) blobItem;
                 System.out.println("Blob name found is " + blob.getName());
+                blob.breakLease(0);
                 blob.delete();
             }
         } catch (URISyntaxException | InvalidKeyException | StorageException ex) {
             Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE,
                     null, ex);
+            try {
+                blob.breakLease(0);
+            } catch (StorageException ex1) {
+                Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex1);
+            }
+            
         }
     }
 
@@ -98,6 +107,7 @@ public class BlobManager {
         oldName = oldName.substring(oldName.indexOf("/") + 1, oldName.length());
         newName = newName.substring(newName.indexOf("/") + 1, newName.length());
         System.out.println("The container name is " + containerName);
+         CloudBlob oldBlob = null;
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
                     .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
@@ -106,7 +116,7 @@ public class BlobManager {
                     .getContainerReference(containerName);
             System.out.println("The old path is " + oldName
                     + " and the new path is " + newName);
-            CloudBlob oldBlob = container.getBlockBlobReference(oldName);
+            oldBlob = container.getBlockBlobReference(oldName);
             CloudBlob newBlob = container.getBlockBlobReference(newName);
 
             String path = System.getProperty("user.home").replace("\\", "/") + "/" + oldName;
@@ -118,6 +128,7 @@ public class BlobManager {
             }
             oldBlob.downloadToFile(path);
             newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
+            oldBlob.breakLease(0);
             oldBlob.delete();
             f.delete();
         } catch (URISyntaxException | InvalidKeyException | StorageException ex) {
@@ -134,6 +145,7 @@ public class BlobManager {
         newName = newName.substring(newName.indexOf("/") + 1, newName.length());
         System.out.println("The container name is " + containerName);
         System.out.println("The new name is " + newName);
+        CloudBlob oldBlob = null;
         try {
             CloudStorageAccount storageAccount = CloudStorageAccount
                     .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
@@ -150,7 +162,7 @@ public class BlobManager {
                 String nName = newName + oName.substring(oldName.length());
                 System.out.println("New name is " + nName);
                 CloudBlob newBlob = container.getBlockBlobReference(nName);
-                CloudBlob oldBlob = container.getBlockBlobReference(oName);
+                oldBlob = container.getBlockBlobReference(oName);
                 System.out.println("The blob names are " + blob.getName());
                 String path = System.getProperty("user.home").replace("\\", "/") + "/" + oldName;
                 File f = new File(path);
@@ -159,6 +171,7 @@ public class BlobManager {
                 }
                 oldBlob.downloadToFile(path);
                 newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
+                oldBlob.breakLease(0);
                 oldBlob.delete();
                 f.delete();
             }
@@ -167,6 +180,11 @@ public class BlobManager {
                     null, ex);
             System.out.println("The message of the exception is "
                     + ex.getMessage());
+            try {
+                oldBlob.breakLease(0);
+            } catch (StorageException ex1) {
+                Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex1);
+            }
         } catch (IOException ex) {
             Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -297,6 +315,32 @@ public class BlobManager {
         } catch (StorageException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
+        }
+    }
+
+    public static String acquireLease(String blobName, String containerName,
+            int serverId) {
+        try {
+            CloudStorageAccount storageAccount = CloudStorageAccount
+                    .parse(Connection
+                            .getStorageConnectionString(serverId));
+
+            CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+            CloudBlobContainer container = blobClient
+                    .getContainerReference(containerName);
+            CloudBlob b = container.getBlockBlobReference(blobName);
+
+            if (b.exists()) {
+                String leaseID = b.acquireLease(null, generateLeaseId());
+                // b.breakLease(0);
+                ServerProperties.leasedBlobs.put(b, new Date());
+                return leaseID;
+            } else {
+                return "BlobDoesNotExist";
+            }
+        } catch (URISyntaxException | InvalidKeyException | StorageException ex) {
+            ex.printStackTrace();
+            return null;
         }
     }
 

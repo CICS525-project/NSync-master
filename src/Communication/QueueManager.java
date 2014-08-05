@@ -1,15 +1,16 @@
 package Communication;
 
-import java.util.ArrayList;
-import java.util.Date;
-
 import Controller.SendObject;
 import Controller.ServerProperties;
 
 import com.microsoft.azure.storage.*;
+import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.queue.*;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -228,6 +229,11 @@ public class QueueManager {
                 return result;
             }
 
+            private long timeDifferenceInMinutes(Date laterDate, Date earlierDate) {
+                long result = ((laterDate.getTime() / (60000)) - (earlierDate.getTime() / (60000)));
+                return result;
+            }
+
             @Override
             public void run() {
                 while (true) {
@@ -245,8 +251,26 @@ public class QueueManager {
                         }
                     }
 
+                    //unlock the blobs that have been locked for more than 5 minutes
+                    for (Map.Entry<CloudBlob, Date> entry : ServerProperties.leasedBlobs.entrySet()) {
+                        CloudBlob b = entry.getKey();
+                        Date date = entry.getValue();
+
+                        if (timeDifferenceInMinutes(new Date(), date) >= 5) {
+                            try {
+                                if (b.exists()) {
+                                    b.breakLease(0);
+                                    ServerProperties.leasedBlobs.remove(b);
+                                }
+                            } catch (StorageException ex) {
+                                Logger.getLogger(QueueManager.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    }
+
+                    // for(CloudBlob b: )
                     try {
-                        Thread.sleep(86400);
+                        Thread.sleep(60000);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(QueueManager.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -258,7 +282,7 @@ public class QueueManager {
 
     public static void main(String[] args) {
         // System.out.println(User.getUsername());
-        for(CloudQueue s:getListOfQueues("demo")) {
+        for (CloudQueue s : getListOfQueues("demo")) {
             try {
                 s.delete();
             } catch (StorageException ex) {
