@@ -131,6 +131,7 @@ public class BlobManager {
             System.out.println("The path is " + path);
             File f = new File(path);
             if (!f.exists()) {
+                f.getParentFile().mkdirs();
                 f.createNewFile();
             }
             oldBlob.downloadToFile(path);
@@ -176,6 +177,7 @@ public class BlobManager {
                 String path = System.getProperty("user.home").replace("\\", "/") + "/" + oldName;
                 File f = new File(path);
                 if (!f.exists()) {
+                     f.getParentFile().mkdirs();
                     f.createNewFile();
                 }
                 oldBlob.downloadToFile(path);
@@ -252,6 +254,7 @@ public class BlobManager {
                 File f = new File(path);
                 if (!f.exists()) {
                     try {
+                         f.getParentFile().mkdirs();
                         f.createNewFile();
                         destBlob.uploadFromFile(path);
                         f.delete();
@@ -270,6 +273,7 @@ public class BlobManager {
                 System.out.println("The path is " + path);
                 File f = new File(path);
                 if (!f.exists()) {
+                     f.getParentFile().mkdirs();
                     f.createNewFile();
                 }
                 sourceBlob.downloadToFile(path);
