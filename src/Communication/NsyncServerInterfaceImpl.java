@@ -30,6 +30,10 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
     @Override
     public boolean getPermission(SendObject s) throws RemoteException {
         
+        if(s.getEvent().equals(SendObject.EventType.Create)) {
+            return true;
+        }
+        
         String blobName = Receiver.pathParser(s.getFilePath()) + s.getFileName();
         String containerName = s.getUserID();
         
