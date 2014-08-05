@@ -10,6 +10,7 @@ import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.LeaseState;
+import com.microsoft.azure.storage.blob.LeaseStatus;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import java.io.File;
 import java.io.IOException;
@@ -262,6 +263,10 @@ public class BlobManager {
             String leaseId = "";
             while (true) {
                 if (sourceBlob.exists()) {
+                    sourceBlob.downloadAttributes();
+                    if(sourceBlob.getProperties().getLeaseStatus().equals(LeaseStatus.LOCKED)) {
+                        sourceBlob.breakLease(0);
+                    }
                     try {
                         leaseId = sourceBlob.acquireLease(60, generateLeaseId());
                         break;
