@@ -349,14 +349,14 @@ public class BlobManager {
 
             if (b.exists()) {
                 b.downloadAttributes();
-                if (b.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+               /* if (b.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
                     b.breakLease(0);
-                }
+                } */
                 System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
-                String leaseID = b.acquireLease(30, generateLeaseId());
+               // String leaseID = b.acquireLease(30, generateLeaseId());
                 //  System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
-                ServerProperties.leasedBlobs.put(b, new Date());
-                return leaseID;
+                //ServerProperties.leasedBlobs.put(b, new Date());
+                return null;//leaseID;
             } else {
                 return "BlobDoesNotExist";
             }
