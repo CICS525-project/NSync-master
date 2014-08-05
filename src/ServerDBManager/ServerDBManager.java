@@ -331,8 +331,10 @@ public class ServerDBManager {
                 Date date = new Date(last_local.getTime());
                 SendObject newSendObject = new SendObject(fileID, fileName, filePath, null, date,
                         false, null, fileHash, userID);
+                
                 QueueManager.enqueue(QueueManager.convertSendObjectToString(newSendObject), Qname);
-
+                System.out.println("\nFollowing is added to " + Qname);
+                System.out.println(QueueManager.convertSendObjectToString(newSendObject));
             }
 
             /* //prints the result set:
@@ -365,7 +367,7 @@ public class ServerDBManager {
         //obj.setID("boject2");
         //obj.setUserID("user");
         //updateDB(obj);
-        //DBServerToClientList("user", getTimeStamp(date), "Q");
+        DBServerToClientList("yanki", getTimeStamp(date), "Q");
         //System.out.println();
         /*
          System.out.println("testing insert");

@@ -302,7 +302,7 @@ public class QueueManager {
         }
 
         s = o.getFileName() + "___" + o.getNewFileName() + "___" + o.getFilePath()
-                + "___" + o.getEvent().toString() + "___" + enteredInDB + "___"
+                + "___" + o.getEvent() + "___" + enteredInDB + "___"
                 + o.getTimeStamp().toString() + "___" + isAFolder + "___"
                 + o.getHash() + "___" + o.getID() + "___" + o.getUserID();
         return s;
