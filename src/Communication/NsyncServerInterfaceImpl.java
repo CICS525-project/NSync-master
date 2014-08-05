@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import Controller.LeaseParams;
 
 public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         NsyncServerInterface {
@@ -28,10 +29,10 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
     }
 
     @Override
-    public boolean getPermission(SendObject s) throws RemoteException {
+    public LeaseParams getPermission(SendObject s) throws RemoteException {
         
         if(s.getEvent().equals(SendObject.EventType.Create)) {
-            return true;
+            return new LeaseParams(null, null, null, true); 
         }
         
         String blobName = Receiver.pathParser(s.getFilePath()) + s.getFileName();
@@ -39,12 +40,13 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
         
         String server1Lease = BlobManager.acquireLease(blobName, containerName, 1);
         String server2Lease = BlobManager.acquireLease(blobName, containerName, 2);
-        String server3Lease = BlobManager.acquireLease(blobName, containerName, 3);
+        String server3Lease = BlobManager.acquireLease(blobName, containerName, 3); 
         
         if(server1Lease == null || server2Lease == null || server3Lease == null) {
-            return false;
-        }        
-        return true;
+            return new LeaseParams(server1Lease, server2Lease, server3Lease, true); 
+        }
+        LeaseParams lp = new LeaseParams(server1Lease, server2Lease, server3Lease, true);        
+        return lp;
     }
 
     public boolean getPermissionForServers(String username) {
@@ -95,7 +97,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
     }
 
     @Override
-    public SendObject serverDBUpdate(SendObject s, String queuename) throws RemoteException {
+    public SendObject serverDBUpdate(SendObject s, String queuename, LeaseParams p) throws RemoteException {
 
         // call the db update method to insert into the db
         // if insert is successfully done
@@ -111,16 +113,16 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
 
         if (s.getEvent().equals(SendObject.EventType.Delete)) {
             //call blobmanager to delete the file from the blob
-            BlobManager.deleteBlob(s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getFileName());
+            BlobManager.deleteBlob(s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getFileName(), p.getServer1Lease());
         }
 
         if (s.getEvent().equals(SendObject.EventType.Rename)) {
             //call blobmanager to delete the file from the blob
-            BlobManager.renameBlob(s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getNewFileName(), s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getFileName());
+            BlobManager.renameBlob(s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getNewFileName(), s.getUserID() + "/" + Receiver.pathParser(s.getFilePath()) + s.getFileName(), p.getServer1Lease());
         }
 
         //broadcast to other servers
-        PublishToOtherServers.publisher(s, queuename);
+        PublishToOtherServers.publisher(s, queuename, p);
         //return the sendObject to the client;
         return s;
     }

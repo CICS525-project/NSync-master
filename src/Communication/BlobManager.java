@@ -1,6 +1,7 @@
 package Communication;
 
 import Controller.ServerProperties;
+import com.microsoft.azure.storage.AccessCondition;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.BlobContainerPermissions;
@@ -39,7 +40,7 @@ public class BlobManager {
         }
     }
 
-    public synchronized static void deleteBlob(String fullPath) {
+    public synchronized static void deleteBlob(String fullPath, String leaseID) {
 
         String blobName = fullPath.substring(fullPath.indexOf("/") + 1);
         String containerName = fullPath.substring(0, fullPath.indexOf("/"));
@@ -65,7 +66,8 @@ public class BlobManager {
                 blob.downloadAttributes();
                 System.out.println("Blob name found is " + blob.getName());
                 if (blob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
-                    blob.breakLease(0);
+                    AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
+                    blob.breakLease(0, a, null, null);
                 }
                 blob.delete();
             }
@@ -98,18 +100,18 @@ public class BlobManager {
         }
     }
 
-    public synchronized static void renameBlob(String newName, String oldName) {
+    public synchronized static void renameBlob(String newName, String oldName, String leaseID) {
         //if it has the last index of a dot then it is a file else it is a folder
         if (newName.lastIndexOf(".") == -1 && oldName.lastIndexOf(".") == -1) {
             System.out.println("Blob is a directory");
-            renameBlobDir(oldName, newName);
+            renameBlobDir(oldName, newName, leaseID);
         } else {
             //blob is a file
-            renameSingleBlob(oldName, newName);
+            renameSingleBlob(oldName, newName, leaseID);
         }
     }
 
-    private static void renameSingleBlob(String oldName, String newName) {
+    private static void renameSingleBlob(String oldName, String newName, String leaseID) {
         String containerName = oldName.substring(0, oldName.indexOf("/"));
         oldName = oldName.substring(oldName.indexOf("/") + 1, oldName.length());
         newName = newName.substring(newName.indexOf("/") + 1, newName.length());
@@ -137,7 +139,8 @@ public class BlobManager {
             oldBlob.downloadToFile(path);
             newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
             if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
-                    oldBlob.breakLease(0);
+                   AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
+                   oldBlob.breakLease(0, a, null, null);
                 }
             oldBlob.delete();
             f.delete();
@@ -149,7 +152,7 @@ public class BlobManager {
         }
     }
 
-    private static void renameBlobDir(String oldName, String newName) {
+    private static void renameBlobDir(String oldName, String newName, String leaseID) {
         String containerName = oldName.substring(0, oldName.indexOf("/"));
         oldName = oldName.substring(oldName.indexOf("/") + 1, oldName.length());
         newName = newName.substring(newName.indexOf("/") + 1, newName.length());
@@ -183,7 +186,8 @@ public class BlobManager {
                 oldBlob.downloadToFile(path);
                 newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
                 if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
-                    oldBlob.breakLease(0);
+                   AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
+                    oldBlob.breakLease(0, a, null, null);
                 }
                 oldBlob.delete();
                 f.delete();
@@ -340,7 +344,7 @@ public class BlobManager {
                     b.breakLease(5);
                 }
                 System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
-                String leaseID = b.acquireLease(5, generateLeaseId());
+                String leaseID = b.acquireLease(15, generateLeaseId());
                 System.out.println("Acquring lease on " + b.getName() + " on server " + serverId);
                 ServerProperties.leasedBlobs.put(b, new Date());
                 return leaseID;

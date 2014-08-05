@@ -41,9 +41,11 @@ public class Receiver {
                                 .deque(ServerProperties.queueName);
                         SendObject d = QueueManager
                                 .convertStringToSendObject(message);
-                        int serverId = Integer.valueOf(message.substring(message.lastIndexOf("___")).replaceAll("\\D+", ""));
+                        String[] params = message.split("___");
+                        int serverId = Integer.valueOf((params[params.length-2]).replaceAll("\\D+", ""));
+                        String leaseID = params[params.length-1];
                         // int serverId = Integer.parseInt(message.substring(message.lastIndexOf("___")));
-                        System.out.println("Received message from server " + serverId + " and the message is " + message);
+                        System.out.println("Received message from server " + serverId + " and the message is " + message + ". The leaase ID is " + leaseID);
                         
                       /*  while (true) {
                             String lease = BlobManager.acquireLease(pathParser(d.getFilePath()) + d.getFileName(), d.getUserID(), serverId);
@@ -59,7 +61,7 @@ public class Receiver {
                             }
                         } */
                         ServerDBManager.updateDB(d);
-                        actOnMessage(d, serverId);
+                        actOnMessage(d, serverId, leaseID);
                         processMessageFromQueue(d);
                         // call to dbManager to update the SendObject missing
                     }
@@ -76,7 +78,7 @@ public class Receiver {
         ServerProperties.subscriber.start();
     }
 
-    private static void actOnMessage(SendObject s, int fromWhichServer) {
+    private static void actOnMessage(SendObject s, int fromWhichServer, String leaseId) {
 
         if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Modify)) {
             //client should do the update
@@ -86,12 +88,12 @@ public class Receiver {
 
         if (s.getEvent().equals(SendObject.EventType.Delete)) {
             //call blobmanager to delete the file from the blob
-            BlobManager.deleteBlob(s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName());
+            BlobManager.deleteBlob(s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName(), leaseId);
         }
 
         if (s.getEvent().equals(SendObject.EventType.Rename)) {
             //call blobmanager to delete the file from the blob
-            BlobManager.renameBlob(s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getNewFileName(), s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName());
+            BlobManager.renameBlob(s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getNewFileName(), s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName(), leaseId);
         }
 
         //add to all the queues that have that username as prefix
