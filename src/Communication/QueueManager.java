@@ -240,7 +240,7 @@ public class QueueManager {
                         if (queueName.matches(".*\\d+.*")) {
                             long timeCreated = Long.valueOf(queueName.replaceAll("\\D+", ""));
 
-                            if (timeDifferenceInMinutes(new Date(), new Date(timeCreated)) > 2 && !ServerProperties.userQueues.containsKey(queueName)) {
+                            if (timeDifferenceInMinutes(new Date(), new Date(timeCreated)) > 6 && !ServerProperties.userQueues.containsKey(queueName)) {
                                 if (!queueName.equals("fileevents") && !queueName.equals("userevents")) {
                                     System.out.println("Deleting " + queueName);
                                     deleteQueue(queueName);
@@ -271,7 +271,7 @@ public class QueueManager {
 
                     // for(CloudBlob b: )
                     try {
-                        Thread.sleep(60000);
+                        Thread.sleep(300000);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(QueueManager.class.getName()).log(Level.SEVERE, null, ex);
                     }

@@ -65,7 +65,7 @@ public class BlobManager {
                 blob = (CloudBlob) blobItem;
                 blob.downloadAttributes();
                 System.out.println("Blob name found is " + blob.getName());
-                if (blob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                if (blob.getProperties().getLeaseState().equals(LeaseState.LEASED) && leaseID != null) {
                     AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
                     blob.breakLease(0, a, null, null);
                 }
@@ -138,7 +138,7 @@ public class BlobManager {
             }
             oldBlob.downloadToFile(path);
             newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
-            if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+            if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED) && leaseID != null) {
                 AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
                 oldBlob.breakLease(0, a, null, null);
             }
@@ -185,7 +185,7 @@ public class BlobManager {
                 }
                 oldBlob.downloadToFile(path);
                 newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
-                if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED) && leaseID != null) {
                     AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
                     oldBlob.breakLease(0, a, null, null);
                 }
@@ -268,7 +268,7 @@ public class BlobManager {
                 }
             }
 
-            if (destBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+            if (destBlob.getProperties().getLeaseState().equals(LeaseState.LEASED) && leaseId != null) {
                 AccessCondition a = AccessCondition.generateLeaseCondition(leaseId);
                 destBlob.breakLease(0, a, null, null);
             }
@@ -289,7 +289,7 @@ public class BlobManager {
                         sourceBlob.downloadToFile(path);
                         break;
                     } catch (Exception e) {
-
+                        e.printStackTrace();
                     }
                 }
 
