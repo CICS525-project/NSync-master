@@ -83,7 +83,7 @@ public class Receiver {
         if (s.getEvent().equals(SendObject.EventType.Create) || s.getEvent().equals(SendObject.EventType.Modify)) {
             //client should do the update
             String path = pathParser(s.getFilePath()) + s.getFileName();
-            BlobManager.copyBlob(s.getUserID(), s.getUserID(), path, fromWhichServer, ServerProperties.serverId);
+            BlobManager.copyBlob(s.getUserID(), s.getUserID(), path, fromWhichServer, ServerProperties.serverId, leaseId);
         }
 
         if (s.getEvent().equals(SendObject.EventType.Delete)) {

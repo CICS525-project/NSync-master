@@ -139,9 +139,9 @@ public class BlobManager {
             oldBlob.downloadToFile(path);
             newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
             if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
-                   AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
-                   oldBlob.breakLease(0, a, null, null);
-                }
+                AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
+                oldBlob.breakLease(0, a, null, null);
+            }
             oldBlob.delete();
             f.delete();
         } catch (URISyntaxException | InvalidKeyException | StorageException ex) {
@@ -180,13 +180,13 @@ public class BlobManager {
                 String path = System.getProperty("user.home").replace("\\", "/") + "/" + oldName;
                 File f = new File(path);
                 if (!f.exists()) {
-                     f.getParentFile().mkdirs();
+                    f.getParentFile().mkdirs();
                     f.createNewFile();
                 }
                 oldBlob.downloadToFile(path);
                 newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
                 if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
-                   AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
+                    AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
                     oldBlob.breakLease(0, a, null, null);
                 }
                 oldBlob.delete();
@@ -209,7 +209,7 @@ public class BlobManager {
         }
     }
 
-    public static void copyBlob(String srcContainerName, String destContainerName, String blobName, int sourceServer, int destServer) {
+    public static void copyBlob(String srcContainerName, String destContainerName, String blobName, int sourceServer, int destServer, String leaseId) {
 
         CloudStorageAccount storageAccountSource = null;
         CloudStorageAccount storageAccountDest = null;
@@ -258,7 +258,7 @@ public class BlobManager {
                 File f = new File(path);
                 if (!f.exists()) {
                     try {
-                         f.getParentFile().mkdirs();
+                        f.getParentFile().mkdirs();
                         f.createNewFile();
                         destBlob.uploadFromFile(path);
                         f.delete();
@@ -267,7 +267,11 @@ public class BlobManager {
                     }
                 }
             }
-            String leaseId = "";          
+
+            if (destBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                AccessCondition a = AccessCondition.generateLeaseCondition(leaseId);
+                destBlob.breakLease(0, a, null, null);
+            }
 
             if (sourceBlob.exists()) {
                 //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
@@ -277,10 +281,18 @@ public class BlobManager {
                 System.out.println("The path is " + path);
                 File f = new File(path);
                 if (!f.exists()) {
-                     f.getParentFile().mkdirs();
+                    f.getParentFile().mkdirs();
                     f.createNewFile();
                 }
-                sourceBlob.downloadToFile(path);
+                while (true) {
+                    try {
+                        sourceBlob.downloadToFile(path);
+                        break;
+                    } catch (Exception e) {
+
+                    }
+                }
+
                 destBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
                 //oldBlob.delete();
                 f.delete();
@@ -364,6 +376,6 @@ public class BlobManager {
     }
 
     public static void main(String[] args) {
-        copyBlob("democontainer", "democontainer", "Kalimba.mp3", 1, 3);
+       // copyBlob("democontainer", "democontainer", "Kalimba.mp3", 1, 3);
     }
 }
