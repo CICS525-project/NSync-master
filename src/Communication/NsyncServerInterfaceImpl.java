@@ -164,6 +164,7 @@ public class NsyncServerInterfaceImpl extends UnicastRemoteObject implements
             return queuename;
         } else {
             if (ServerProperties.userQueues.containsKey(oldQueueName) && QueueManager.queueExists(oldQueueName)) {
+                ServerProperties.userQueues.put(oldQueueName, new Date());
                 return oldQueueName;
             } else {
                 String queuename = username + new Date().getTime();
