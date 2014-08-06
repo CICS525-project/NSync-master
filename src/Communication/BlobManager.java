@@ -65,10 +65,13 @@ public class BlobManager {
                 blob = (CloudBlob) blobItem;
                 blob.downloadAttributes();
                 System.out.println("Blob name found is " + blob.getName());
-                if (blob.getProperties().getLeaseState().equals(LeaseState.LEASED) && leaseID != null) {
+              if(leaseID != null) {
+                 if (blob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
                     AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
                     blob.breakLease(0, a, null, null);
-                }
+                } 
+              }
+                
                 blob.delete();
             }
         } catch (URISyntaxException | InvalidKeyException | StorageException ex) {
@@ -138,9 +141,11 @@ public class BlobManager {
             }
             oldBlob.downloadToFile(path);
             newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
-            if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED) && leaseID != null) {
+            if(leaseID != null) {
+            if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED) ) {
                 AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
                 oldBlob.breakLease(0, a, null, null);
+            }
             }
             oldBlob.delete();
             f.delete();
@@ -185,9 +190,11 @@ public class BlobManager {
                 }
                 oldBlob.downloadToFile(path);
                 newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
-                if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED) && leaseID != null) {
+                if(leaseID != null) {
+                if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
                     AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
                     oldBlob.breakLease(0, a, null, null);
+                }
                 }
                 oldBlob.delete();
                 f.delete();
@@ -268,11 +275,12 @@ public class BlobManager {
                 }
             }
 
-            if (destBlob.getProperties().getLeaseState().equals(LeaseState.LEASED) && leaseId != null) {
+            if(leaseId !=  null) {
+            if (destBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
                 AccessCondition a = AccessCondition.generateLeaseCondition(leaseId);
                 destBlob.breakLease(0, a, null, null);
             }
-
+            }
             if (sourceBlob.exists()) {
                 //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
                 //destBlob.startCopyFromBlob(sourceBlob);
