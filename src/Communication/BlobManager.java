@@ -273,14 +273,16 @@ public class BlobManager {
                         Logger.getLogger(BlobManager.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-            }
-
-            if(leaseId !=  null) {
+            } else {
+                if(leaseId !=  null) {
             if (destBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
                 AccessCondition a = AccessCondition.generateLeaseCondition(leaseId);
                 destBlob.breakLease(0, a, null, null);
             }
             }
+            }
+
+            
             if (sourceBlob.exists()) {
                 //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
                 //destBlob.startCopyFromBlob(sourceBlob);
