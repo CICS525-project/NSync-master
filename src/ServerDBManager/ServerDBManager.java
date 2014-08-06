@@ -20,7 +20,7 @@ public class ServerDBManager {
 
     public static Connection connection = null;
 
-    public static void startServerDB() {
+    public static Connection startServerDB() {
         // Connection string for your SQL Database server 1.
         /*String connectionString = "jdbc:sqlserver://e55t52o9fy.database.windows.net:1433"
          + ";"
@@ -52,7 +52,7 @@ public class ServerDBManager {
             System.out.println("Server DB could not be started");
             e.printStackTrace(System.out);
         }
-
+        return connection;
     }
 
     private static void createFilesTable() {
@@ -108,7 +108,7 @@ public class ServerDBManager {
 
         int result = -1;
 
-        setConnection();
+        connection = setConnection();
 
         if (!isIDInDB(file_id)) {
             try {
@@ -139,7 +139,7 @@ public class ServerDBManager {
         java.sql.Timestamp last_local_update = getTimeStamp(obj.getTimeStamp());
 
         int result = -1;
-        setConnection();
+        connection = setConnection();
 
         if (isIDInDB(file_id)) {
             try {
@@ -166,7 +166,7 @@ public class ServerDBManager {
         boolean is_folder = obj.isIsAFolder();
 
         int result = -1;
-        setConnection();
+        connection = setConnection();
         PreparedStatement ps = null;
         String root_path = "";
 
@@ -220,7 +220,7 @@ public class ServerDBManager {
 
         int result = -1;
 
-        setConnection();
+        connection = setConnection();
         try {
             PreparedStatement ps = connection
                     .prepareStatement("DELETE FROM files WHERE file_id = ?");
@@ -237,7 +237,7 @@ public class ServerDBManager {
     private static int serverShare(SendObject obj) {
         int result = -1;
 
-        setConnection();
+        connection = setConnection();
         PreparedStatement ps = null;
 
         String file_id = obj.getID();
@@ -265,10 +265,11 @@ public class ServerDBManager {
         return new java.sql.Timestamp(d.getTime());
     }
 
-    private static void setConnection() {
-        if (connection == null) {
-            startServerDB();
-        }
+    private static Connection setConnection() {
+        /*if (connection == null) {
+            connection = startServerDB();
+        }*/
+        return startServerDB();
     }
 
     /*
@@ -310,9 +311,10 @@ public class ServerDBManager {
     updated since the last time client updated itself.
     */
     public static void DBServerToClientList(String userID, java.sql.Timestamp TS, String Qname) {
-        setConnection();
+        connection = setConnection();
         ResultSet rs = null;
-
+        System.out.println("DBServerToClient called by " + userID + "with time stamp "
+        + TS + "and Qname: " + Qname);
         try {
             PreparedStatement ps = connection
                     .prepareStatement("SELECT * FROM files WHERE last_local_update > ? AND user_id = ?");
@@ -336,7 +338,9 @@ public class ServerDBManager {
                 System.out.println("\nFollowing is added to " + Qname);
                 System.out.println(QueueManager.convertSendObjectToString(newSendObject));
             }
-
+            ps.close();
+            rs.close();
+            connection.close();
             /* //prints the result set:
              ResultSetMetaData rsmd = rs.getMetaData();
              System.out.println("querying SELECT * FROM XXX");
@@ -355,7 +359,8 @@ public class ServerDBManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        
+       
     }
 
     public static void main(String[] args) {
