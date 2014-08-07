@@ -1,5 +1,6 @@
 package Communication;
 
+import Controller.SendObject;
 import Controller.ServerProperties;
 import com.microsoft.azure.storage.AccessCondition;
 import com.microsoft.azure.storage.CloudStorageAccount;
@@ -65,13 +66,13 @@ public class BlobManager {
                 blob = (CloudBlob) blobItem;
                 blob.downloadAttributes();
                 System.out.println("Blob name found is " + blob.getName());
-              if(leaseID != null) {
-                 if (blob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
-                    AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
-                    blob.breakLease(0, a, null, null);
-                } 
-              }
-                
+                if (leaseID != null) {
+                    if (blob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                        AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
+                        blob.breakLease(0, a, null, null);
+                    }
+                }
+
                 blob.delete();
             }
         } catch (URISyntaxException | InvalidKeyException | StorageException ex) {
@@ -103,7 +104,26 @@ public class BlobManager {
         }
     }
 
+    public synchronized static void renameBlob(String newName, String oldName, String leaseID, SendObject s, int source) {
+
+        try {
+            CloudStorageAccount storageAccount = CloudStorageAccount
+                    .parse(Connection.getStorageConnectionString(ServerProperties.serverId));
+            CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+            CloudBlobContainer container = blobClient
+                    .getContainerReference(s.getUserID());
+            CloudBlob b = container.getBlockBlobReference(oldName);
+            if (!b.exists()) {
+                copyBlob(s.getUserID(), s.getUserID(), newName, source, ServerProperties.serverId, leaseID);
+                return;
+            }
+        } catch (Exception e) {
+            System.out.println("Blob does not exist");
+        }
+    }
+
     public synchronized static void renameBlob(String newName, String oldName, String leaseID) {
+
         //if it has the last index of a dot then it is a file else it is a folder
         if (newName.lastIndexOf(".") == -1 && oldName.lastIndexOf(".") == -1) {
             System.out.println("Blob is a directory");
@@ -141,11 +161,11 @@ public class BlobManager {
             }
             oldBlob.downloadToFile(path);
             newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
-            if(leaseID != null) {
-            if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED) ) {
-                AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
-                oldBlob.breakLease(0, a, null, null);
-            }
+            if (leaseID != null) {
+                if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                    AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
+                    oldBlob.breakLease(0, a, null, null);
+                }
             }
             oldBlob.delete();
             f.delete();
@@ -190,11 +210,11 @@ public class BlobManager {
                 }
                 oldBlob.downloadToFile(path);
                 newBlob.uploadFromFile(path);//.startCopyFromBlob(oldBlob);
-                if(leaseID != null) {
-                if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
-                    AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
-                    oldBlob.breakLease(0, a, null, null);
-                }
+                if (leaseID != null) {
+                    if (oldBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                        AccessCondition a = AccessCondition.generateLeaseCondition(leaseID);
+                        oldBlob.breakLease(0, a, null, null);
+                    }
                 }
                 oldBlob.delete();
                 f.delete();
@@ -274,15 +294,14 @@ public class BlobManager {
                     }
                 }
             } else {
-                if(leaseId !=  null) {
-            if (destBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
-                AccessCondition a = AccessCondition.generateLeaseCondition(leaseId);
-                destBlob.breakLease(0, a, null, null);
-            }
-            }
+                if (leaseId != null) {
+                    if (destBlob.getProperties().getLeaseState().equals(LeaseState.LEASED)) {
+                        AccessCondition a = AccessCondition.generateLeaseCondition(leaseId);
+                        destBlob.breakLease(0, a, null, null);
+                    }
+                }
             }
 
-            
             if (sourceBlob.exists()) {
                 //System.out.println(sourceBlob.acquireLease(40, "ok", null, null, null));
                 //destBlob.startCopyFromBlob(sourceBlob);
@@ -386,6 +405,6 @@ public class BlobManager {
     }
 
     public static void main(String[] args) {
-       // copyBlob("democontainer", "democontainer", "Kalimba.mp3", 1, 3);
+        // copyBlob("democontainer", "democontainer", "Kalimba.mp3", 1, 3);
     }
 }

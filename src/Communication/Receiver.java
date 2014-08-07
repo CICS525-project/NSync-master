@@ -92,8 +92,9 @@ public class Receiver {
         }
 
         if (s.getEvent().equals(SendObject.EventType.Rename)) {
+            
             //call blobmanager to delete the file from the blob
-            BlobManager.renameBlob(s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getNewFileName(), s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName(), leaseId);
+            BlobManager.renameBlob(s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getNewFileName(), s.getUserID() + "/" + pathParser(s.getFilePath()) + s.getFileName(), leaseId, s, fromWhichServer);
         }
 
         //add to all the queues that have that username as prefix
